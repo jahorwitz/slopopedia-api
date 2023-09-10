@@ -268,10 +268,10 @@ export const lists: Lists = {
       description: text({ validation: { isRequired: true } }),
       decade: integer({ defaultValue: 0, db: { map: "my_decade" } }),
       // images: image({ storage: 'local' }), //question about this, how will this work?
-      //need keywords to hold an array of strings 
+      //need keywords to hold an array of strings
       //could have used keyword but then the relationship would only be 1-way
       // keywords: relationship({ ref: "Keyword.keywords", many: true }),
-    howToWatch: text({ validation: { isRequired: true } }),
+      howToWatch: text({ validation: { isRequired: true } }),
     },
   }),
 };

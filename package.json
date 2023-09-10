@@ -10,7 +10,7 @@
     "generate": "keystone prisma migrate dev",
     "deploy": "keystone build && keystone prisma migrate deploy",
     "postinstall": "keystone build --no-ui --frozen",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "lint": "npx prettier --check --ignore-unknown \"./**/*.ts\"",
     "lint:fix": "npx prettier --write --ignore-unknown \"./**/*.ts\""
   },
