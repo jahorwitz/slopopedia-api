@@ -43,16 +43,16 @@ export default withAuth(
     // https://keystonejs.com/docs/config/config#storage-images-and-files
     // amazone s3 or digital ocean as an option
     storage: {
-      // my_S3_images: {
-      //   kind: "s3",
-      //   type: "image",
-      //   bucketName,
-      //   region,
-      //   accessKeyId,
-      //   secretAccessKey,
-      //   signed: { expiry: 5000 },
-      //   endpoint: "http://localhost:3000",
-      // },
+      my_S3_images: {
+        kind: "s3",
+        type: "image",
+        bucketName: process.env.S3_BUCKET_NAME || "keystone-test",
+        region: process.env.S3_REGION || "us-east-1",
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || "keystone",
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "keystone",
+        signed: { expiry: 5000 },
+        forcePathStyle: true,
+      },
     },
     lists,
     session,
