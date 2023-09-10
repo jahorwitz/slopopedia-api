@@ -1,5 +1,14 @@
 node_modules
-.keystone/admin
-keystone.db
 *.log
+
+.keystone
+dist/
+node_modules/
 .env
+
+# ts-gql
+__generated__
+
+# OS
+.DS_Store
+*.vscode

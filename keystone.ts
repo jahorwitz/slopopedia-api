@@ -39,6 +39,14 @@ export default withAuth(
       // Optional advanced configuration
       enableLogging: true,
       idField: { kind: "uuid" },
+      useMigrations: true,
+    },
+    telemetry: false,
+    graphql: {
+      playground: true,
+      apolloConfig: {
+        introspection: true,
+      },
     },
     // https://keystonejs.com/docs/config/config#storage-images-and-files
     // amazone s3 or digital ocean as an option
@@ -56,5 +64,5 @@ export default withAuth(
     },
     lists,
     session,
-  }),
+  })
 );
