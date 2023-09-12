@@ -88,16 +88,18 @@ export const lists: Lists = {
 
       // we can use this field to see what Posts this User has authored
       //   more on that in the Post list below
-      posts: relationship({ ref: "Post.author", many: true }),
+      posts: relationship({ ref: "Post.assignedTo", many: true }),
+
+      movies: relationship({ ref: "Movie.assignedTo", many: true }),
 
       // a User can add many movies to a wishlist
-      //wishlist: relationship({ ref: "Movie.title", many: true }),
+      wishlist: relationship({ ref: "Movie.movieTitle", many: true }),
 
       // a User can watch many movies
-      //watched: relationship({ ref: "Movie.title", many: true }),
+      watched: relationship({ ref: "Movie.movieWatched", many: true }),
 
       // UserPreference to personalize a Slop experience
-      // preference: relationship({ ref: "Preference.id", many: true}),
+      preferences: relationship({ ref: "UserPreference.user", many: true }),
 
       createdAt: timestamp({
         // this sets the timestamp to Date.now() when the user is first created
@@ -137,10 +139,10 @@ export const lists: Lists = {
       }),
 
       // a user can post image(s) on their blog
-      //photo: image({ storage: "my_S3_images" }),
+      photo: image({ storage: "my_S3_images" }),
 
       // with this field, you can set a User as the author for a Post
-      author: relationship({
+      assignedTo: relationship({
         // we could have used 'User', but then the relationship would only be 1-way
         ref: "User.posts",
 
@@ -187,7 +189,7 @@ export const lists: Lists = {
       // with this field, you can add some Slops to Posts
       slops: relationship({
         // we could have used 'Slop', but then the relationship would only be 1-way
-        ref: "Slop.posts",
+        ref: "Movie.posts",
 
         // a Post can have many Slops, not just one
         many: true,
@@ -195,11 +197,11 @@ export const lists: Lists = {
         // this is some customisations for changing how this will look in the AdminUI
         ui: {
           displayMode: "cards",
-          cardFields: ["name"],
-          inlineEdit: { fields: ["name"] },
+          cardFields: ["title"],
+          inlineEdit: { fields: ["title"] },
           linkToItem: true,
           inlineConnect: true,
-          inlineCreate: { fields: ["name"] },
+          inlineCreate: { fields: ["title"] },
         },
       }),
     },
@@ -223,27 +225,7 @@ export const lists: Lists = {
       name: text(),
       // this can be helpful to find out all the Posts associated with a Tag
       posts: relationship({ ref: "Post.keywords", many: true }),
-    },
-  }),
-
-  // this last list is our Slop list, it only has a name field for now
-  Slop: list({
-    // WARNING
-    //   for this starter project, anyone can create, query, update and delete anything
-    //   if you want to prevent random people on the internet from accessing your data,
-    //   you can find out more at https://keystonejs.com/docs/guides/auth-and-access-control
-    access: allowAll,
-
-    // setting this to isHidden for the user interface prevents this list being visible in the Admin UI
-    ui: {
-      isHidden: true,
-    },
-
-    // this is the fields for our Slop list
-    fields: {
-      name: text(),
-      // this can be helpful to find out all the Posts associated with a Slop
-      posts: relationship({ ref: "Post.slops", many: true }),
+      movies: relationship({ ref: "Movie.keywords", many: true }),
     },
   }),
 
@@ -251,7 +233,7 @@ export const lists: Lists = {
     access: allowAll,
 
     fields: {
-      // author: relationship({ ref: "User.movies", many: false }), //should this be false or true?
+      assignedTo: relationship({ ref: "User.movies", many: false }),
       title: text({ validation: { isRequired: true } }),
       sortTitle: text({ validation: { isRequired: true } }), //is this needed? Can we sort by title?
       tomatoScore: integer({
@@ -261,17 +243,62 @@ export const lists: Lists = {
           isRequired: true,
         },
         isIndexed: "unique",
-      }), //are all these fields needed?
+      }),
       runtime: integer({ defaultValue: 0, db: { map: "my_runtime" } }),
       releaseYear: integer({ defaultValue: 0, db: { map: "my_releaseYear" } }),
       handicap: integer({ defaultValue: 0, db: { map: "my_handicap" } }),
       description: text({ validation: { isRequired: true } }),
       decade: integer({ defaultValue: 0, db: { map: "my_decade" } }),
-      // images: image({ storage: 'local' }), //question about this, how will this work?
-      //need keywords to hold an array of strings
-      //could have used keyword but then the relationship would only be 1-way
-      // keywords: relationship({ ref: "Keyword.keywords", many: true }),
+      photo: image({ storage: "my_S3_images" }),
+      posts: relationship({ ref: "Post.slops", many: false }),
+      keywords: relationship({ ref: "Keyword.movies", many: true }),
       howToWatch: text({ validation: { isRequired: true } }),
+      movieTitle: relationship({ ref: "User.wishlist", many: true }),
+      movieWatched: relationship({ ref: "User.watched", many: true }),
+    },
+  }),
+
+  Preference: list({
+    access: allowAll,
+    fields: {
+      category: select({
+        type: "integer",
+        options: [
+          { label: "Production", value: 1 },
+          {
+            label: "Critters & Characters",
+            value: 2,
+          },
+          {
+            label: "Writing",
+            value: 3,
+          },
+          {
+            label: "Hairstyles",
+            value: 4,
+          },
+          {
+            label: "Other Preferences",
+            value: 5,
+          },
+          {
+            label: "Green threshold",
+            value: 6,
+          },
+        ],
+      }),
+      name: text(),
+    },
+  }),
+
+  UserPreference: list({
+    access: allowAll,
+    fields: {
+      // define model structure
+      // this can be helpful to find out all the Posts associated with a Tag
+      user: relationship({ ref: "User.preferences", many: false }),
+      preference: relationship({ ref: "Preference" }),
+      // preference_name: relationship({ ref: "Preference.name", many: true }),
     },
   }),
 };
