@@ -16,8 +16,6 @@ type User {
   moviesCount(where: MovieWhereInput! = {}): Int
   wishlist(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   wishlistCount(where: MovieWhereInput! = {}): Int
-  watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
-  watchedCount(where: MovieWhereInput! = {}): Int
   preferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
   preferencesCount(where: UserPreferenceWhereInput! = {}): Int
   createdAt: DateTime
@@ -55,7 +53,6 @@ input UserWhereInput {
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
   wishlist: MovieManyRelationFilter
-  watched: MovieManyRelationFilter
   preferences: UserPreferenceManyRelationFilter
   createdAt: DateTimeNullableFilter
   lastLoginDate: DateTimeNullableFilter
@@ -194,7 +191,6 @@ input UserUpdateInput {
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
   wishlist: MovieRelateToManyForUpdateInput
-  watched: MovieRelateToManyForUpdateInput
   preferences: UserPreferenceRelateToManyForUpdateInput
   createdAt: DateTime
   lastLoginDate: DateTime
@@ -237,7 +233,6 @@ input UserCreateInput {
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
   wishlist: MovieRelateToManyForCreateInput
-  watched: MovieRelateToManyForCreateInput
   preferences: UserPreferenceRelateToManyForCreateInput
   createdAt: DateTime
   lastLoginDate: DateTime
@@ -431,14 +426,11 @@ type Movie {
   description: String
   decade: Int
   photo: ImageFieldOutput
+  wishlist: User
   posts: Post
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
   howToWatch: String
-  movieTitle(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
-  movieTitleCount(where: UserWhereInput! = {}): Int
-  movieWatched(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
-  movieWatchedCount(where: UserWhereInput! = {}): Int
 }
 
 input MovieWhereUniqueInput {
@@ -460,11 +452,10 @@ input MovieWhereInput {
   handicap: IntNullableFilter
   description: StringFilter
   decade: IntNullableFilter
+  wishlist: UserWhereInput
   posts: PostWhereInput
   keywords: KeywordManyRelationFilter
   howToWatch: StringFilter
-  movieTitle: UserManyRelationFilter
-  movieWatched: UserManyRelationFilter
 }
 
 input IntFilter {
@@ -476,12 +467,6 @@ input IntFilter {
   gt: Int
   gte: Int
   not: IntFilter
-}
-
-input UserManyRelationFilter {
-  every: UserWhereInput
-  some: UserWhereInput
-  none: UserWhereInput
 }
 
 input MovieOrderByInput {
@@ -508,24 +493,16 @@ input MovieUpdateInput {
   description: String
   decade: Int
   photo: ImageFieldInput
+  wishlist: UserRelateToOneForUpdateInput
   posts: PostRelateToOneForUpdateInput
   keywords: KeywordRelateToManyForUpdateInput
   howToWatch: String
-  movieTitle: UserRelateToManyForUpdateInput
-  movieWatched: UserRelateToManyForUpdateInput
 }
 
 input PostRelateToOneForUpdateInput {
   create: PostCreateInput
   connect: PostWhereUniqueInput
   disconnect: Boolean
-}
-
-input UserRelateToManyForUpdateInput {
-  disconnect: [UserWhereUniqueInput!]
-  set: [UserWhereUniqueInput!]
-  create: [UserCreateInput!]
-  connect: [UserWhereUniqueInput!]
 }
 
 input MovieUpdateArgs {
@@ -544,21 +521,15 @@ input MovieCreateInput {
   description: String
   decade: Int
   photo: ImageFieldInput
+  wishlist: UserRelateToOneForCreateInput
   posts: PostRelateToOneForCreateInput
   keywords: KeywordRelateToManyForCreateInput
   howToWatch: String
-  movieTitle: UserRelateToManyForCreateInput
-  movieWatched: UserRelateToManyForCreateInput
 }
 
 input PostRelateToOneForCreateInput {
   create: PostCreateInput
   connect: PostWhereUniqueInput
-}
-
-input UserRelateToManyForCreateInput {
-  create: [UserCreateInput!]
-  connect: [UserWhereUniqueInput!]
 }
 
 type Preference {
@@ -604,7 +575,8 @@ input PreferenceCreateInput {
 type UserPreference {
   id: ID!
   user: User
-  preference: Preference
+  preference(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
+  preferenceCount(where: PreferenceWhereInput! = {}): Int
 }
 
 input UserPreferenceWhereUniqueInput {
@@ -617,7 +589,13 @@ input UserPreferenceWhereInput {
   NOT: [UserPreferenceWhereInput!]
   id: IDFilter
   user: UserWhereInput
-  preference: PreferenceWhereInput
+  preference: PreferenceManyRelationFilter
+}
+
+input PreferenceManyRelationFilter {
+  every: PreferenceWhereInput
+  some: PreferenceWhereInput
+  none: PreferenceWhereInput
 }
 
 input UserPreferenceOrderByInput {
@@ -626,13 +604,14 @@ input UserPreferenceOrderByInput {
 
 input UserPreferenceUpdateInput {
   user: UserRelateToOneForUpdateInput
-  preference: PreferenceRelateToOneForUpdateInput
+  preference: PreferenceRelateToManyForUpdateInput
 }
 
-input PreferenceRelateToOneForUpdateInput {
-  create: PreferenceCreateInput
-  connect: PreferenceWhereUniqueInput
-  disconnect: Boolean
+input PreferenceRelateToManyForUpdateInput {
+  disconnect: [PreferenceWhereUniqueInput!]
+  set: [PreferenceWhereUniqueInput!]
+  create: [PreferenceCreateInput!]
+  connect: [PreferenceWhereUniqueInput!]
 }
 
 input UserPreferenceUpdateArgs {
@@ -642,12 +621,12 @@ input UserPreferenceUpdateArgs {
 
 input UserPreferenceCreateInput {
   user: UserRelateToOneForCreateInput
-  preference: PreferenceRelateToOneForCreateInput
+  preference: PreferenceRelateToManyForCreateInput
 }
 
-input PreferenceRelateToOneForCreateInput {
-  create: PreferenceCreateInput
-  connect: PreferenceWhereUniqueInput
+input PreferenceRelateToManyForCreateInput {
+  create: [PreferenceCreateInput!]
+  connect: [PreferenceWhereUniqueInput!]
 }
 
 """

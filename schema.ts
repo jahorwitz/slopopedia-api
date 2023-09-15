@@ -84,7 +84,7 @@ export const lists: Lists = {
 
       // Green threshold allows the user to see what kinds of scores movies end up with once their preferences are set
       // and choose a lowest score for the movie to receive the green tag on the movie details
-      slopRating: integer({ defaultValue: 0, db: { map: "my_integer" } }),
+      slopRating: integer({ defaultValue: 0, db: { map: "my_integer" } }), // this has to be relation based on UserPreference
 
       // we can use this field to see what Posts this User has authored
       //   more on that in the Post list below
@@ -93,10 +93,19 @@ export const lists: Lists = {
       movies: relationship({ ref: "Movie.assignedTo", many: true }),
 
       // a User can add many movies to a wishlist
-      wishlist: relationship({ ref: "Movie.movieTitle", many: true }),
+      //wishlist: relationship({ ref: "Movie.title", many: true }),
+
+      // relates movies to users
+      wishlist: relationship({
+        // we could have used 'Slop', but then the relationship would only be 1-way
+        ref: "Movie.wishlist",
+
+        // a User can have many movies part of a wishlist
+        many: true,
+      }),
 
       // a User can watch many movies
-      watched: relationship({ ref: "Movie.movieWatched", many: true }),
+      //watched: relationship({ ref: "Movie.title", many: true }),
 
       // UserPreference to personalize a Slop experience
       preferences: relationship({ ref: "UserPreference.user", many: true }),
@@ -233,7 +242,23 @@ export const lists: Lists = {
     access: allowAll,
 
     fields: {
-      assignedTo: relationship({ ref: "User.movies", many: false }),
+      assignedTo: relationship({
+        // we could have used 'User', but then the relationship would only be 1-way
+        ref: "User.movies",
+
+        // this is some customisations for changing how this will look in the AdminUI
+        ui: {
+          displayMode: "cards",
+          cardFields: ["name", "email"],
+          inlineEdit: { fields: ["name", "email"] },
+          linkToItem: true,
+          inlineConnect: true,
+        },
+
+        // a Movie can only have one author
+        //   this is the default, but we show it here for verbosity
+        many: false,
+      }),
       title: text({ validation: { isRequired: true } }),
       sortTitle: text({ validation: { isRequired: true } }), //is this needed? Can we sort by title?
       tomatoScore: integer({
@@ -244,17 +269,22 @@ export const lists: Lists = {
         },
         isIndexed: "unique",
       }),
+
       runtime: integer({ defaultValue: 0, db: { map: "my_runtime" } }),
       releaseYear: integer({ defaultValue: 0, db: { map: "my_releaseYear" } }),
       handicap: integer({ defaultValue: 0, db: { map: "my_handicap" } }),
       description: text({ validation: { isRequired: true } }),
       decade: integer({ defaultValue: 0, db: { map: "my_decade" } }),
       photo: image({ storage: "my_S3_images" }),
+
+      wishlist: relationship({ ref: "User.wishlist", many: false }),
       posts: relationship({ ref: "Post.slops", many: false }),
       keywords: relationship({ ref: "Keyword.movies", many: true }),
       howToWatch: text({ validation: { isRequired: true } }),
-      movieTitle: relationship({ ref: "User.wishlist", many: true }),
-      movieWatched: relationship({ ref: "User.watched", many: true }),
+      // with this field, you can add some Slops to Posts
+
+      // movieList: relationship({ ref: "User.wishlist", many: false }),
+      // movieWatched: relationship({ ref: "User.watched", many: false }),
     },
   }),
 
@@ -297,7 +327,7 @@ export const lists: Lists = {
       // define model structure
       // this can be helpful to find out all the Posts associated with a Tag
       user: relationship({ ref: "User.preferences", many: false }),
-      preference: relationship({ ref: "Preference" }),
+      preference: relationship({ ref: "Preference", many: true }),
       // preference_name: relationship({ ref: "Preference.name", many: true }),
     },
   }),

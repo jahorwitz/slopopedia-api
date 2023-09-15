@@ -22,8 +22,7 @@ model User {
   slopRating    Int?             @default(0) @map("my_integer")
   posts         Post[]           @relation("Post_assignedTo")
   movies        Movie[]          @relation("Movie_assignedTo")
-  wishlist      Movie[]          @relation("Movie_movieTitle")
-  watched       Movie[]          @relation("Movie_movieWatched")
+  wishlist      Movie[]          @relation("Movie_wishlist")
   preferences   UserPreference[] @relation("UserPreference_user")
   createdAt     DateTime?        @default(now())
   lastLoginDate DateTime?        @default(now())
@@ -71,14 +70,15 @@ model Movie {
   photo_width     Int?
   photo_height    Int?
   photo_id        String?
+  wishlist        User?     @relation("Movie_wishlist", fields: [wishlistId], references: [id])
+  wishlistId      String?   @map("wishlist")
   posts           Post?     @relation("Movie_posts", fields: [postsId], references: [id])
   postsId         String?   @map("posts")
   keywords        Keyword[] @relation("Keyword_movies")
   howToWatch      String    @default("")
-  movieTitle      User[]    @relation("Movie_movieTitle")
-  movieWatched    User[]    @relation("Movie_movieWatched")
 
   @@index([assignedToId])
+  @@index([wishlistId])
   @@index([postsId])
 }
 
@@ -90,14 +90,12 @@ model Preference {
 }
 
 model UserPreference {
-  id           String      @id @default(uuid())
-  user         User?       @relation("UserPreference_user", fields: [userId], references: [id])
-  userId       String?     @map("user")
-  preference   Preference? @relation("UserPreference_preference", fields: [preferenceId], references: [id])
-  preferenceId String?     @map("preference")
+  id         String       @id @default(uuid())
+  user       User?        @relation("UserPreference_user", fields: [userId], references: [id])
+  userId     String?      @map("user")
+  preference Preference[] @relation("UserPreference_preference")
 
   @@index([userId])
-  @@index([preferenceId])
 }
 
 enum UserRoleType {
