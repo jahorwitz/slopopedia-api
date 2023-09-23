@@ -18,11 +18,12 @@ model User {
   password      String
   role          UserRoleType     @default(user)
   status        String?          @default("active")
-  isPrivileged  Boolean          @default(false)
+  isPrivileged  Boolean          @default(false) @map("is_privileged")
   slopRating    Int?             @default(0) @map("my_integer")
-  posts         Post[]           @relation("Post_assignedTo")
-  movies        Movie[]          @relation("Movie_assignedTo")
-  wishlist      Movie[]          @relation("Movie_wishlist")
+  posts         Post[]           @relation("Post_author")
+  movies        Movie[]          @relation("Movie_author")
+  wishlist      Movie[]          @relation("User_wishlist")
+  watched       Movie[]          @relation("User_watched")
   preferences   UserPreference[] @relation("UserPreference_user")
   createdAt     DateTime?        @default(now())
   lastLoginDate DateTime?        @default(now())
@@ -37,13 +38,13 @@ model Post {
   photo_width     Int?
   photo_height    Int?
   photo_id        String?
-  assignedTo      User?     @relation("Post_assignedTo", fields: [assignedToId], references: [id])
-  assignedToId    String?   @map("assignedTo")
+  author          User?     @relation("Post_author", fields: [authorId], references: [id])
+  authorId        String?   @map("author")
   status          String?
   keywords        Keyword[] @relation("Keyword_posts")
   slops           Movie[]   @relation("Movie_posts")
 
-  @@index([assignedToId])
+  @@index([authorId])
 }
 
 model Keyword {
@@ -54,32 +55,27 @@ model Keyword {
 }
 
 model Movie {
-  id              String    @id @default(uuid())
-  assignedTo      User?     @relation("Movie_assignedTo", fields: [assignedToId], references: [id])
-  assignedToId    String?   @map("assignedTo")
-  title           String    @default("")
-  sortTitle       String    @default("")
-  tomatoScore     Int       @unique @default(0) @map("my_tomatoScore")
-  runtime         Int?      @default(0) @map("my_runtime")
-  releaseYear     Int?      @default(0) @map("my_releaseYear")
-  handicap        Int?      @default(0) @map("my_handicap")
-  description     String    @default("")
-  decade          Int?      @default(0) @map("my_decade")
-  photo_filesize  Int?
-  photo_extension String?
-  photo_width     Int?
-  photo_height    Int?
-  photo_id        String?
-  wishlist        User?     @relation("Movie_wishlist", fields: [wishlistId], references: [id])
-  wishlistId      String?   @map("wishlist")
-  posts           Post?     @relation("Movie_posts", fields: [postsId], references: [id])
-  postsId         String?   @map("posts")
-  keywords        Keyword[] @relation("Keyword_movies")
-  howToWatch      String    @default("")
+  id                 String    @id @default(uuid())
+  author             User?     @relation("Movie_author", fields: [authorId], references: [id])
+  authorId           String?   @map("author")
+  title              String    @default("")
+  description        String    @default("")
+  releaseYear        Int?      @default(0) @map("my_releaseYear")
+  runtime            Int?      @default(0) @map("my_runtime")
+  photo_filesize     Int?
+  photo_extension    String?
+  photo_width        Int?
+  photo_height       Int?
+  photo_id           String?
+  tomatoScore        Int?      @default(0) @map("my_tomatoScore")
+  howToWatch         String    @default("")
+  handicap           Int?      @default(0) @map("my_handicap")
+  posts              Post[]    @relation("Movie_posts")
+  keywords           Keyword[] @relation("Keyword_movies")
+  from_User_wishlist User[]    @relation("User_wishlist")
+  from_User_watched  User[]    @relation("User_watched")
 
-  @@index([assignedToId])
-  @@index([wishlistId])
-  @@index([postsId])
+  @@index([authorId])
 }
 
 model Preference {
@@ -90,10 +86,11 @@ model Preference {
 }
 
 model UserPreference {
-  id         String       @id @default(uuid())
-  user       User?        @relation("UserPreference_user", fields: [userId], references: [id])
-  userId     String?      @map("user")
-  preference Preference[] @relation("UserPreference_preference")
+  id                  String       @id @default(uuid())
+  user                User?        @relation("UserPreference_user", fields: [userId], references: [id])
+  userId              String?      @map("user")
+  preference          Preference[] @relation("UserPreference_preference")
+  preference_category Int?         @default(0) @map("my_integer")
 
   @@index([userId])
 }

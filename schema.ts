@@ -50,7 +50,14 @@ export const lists: Lists = {
         isIndexed: "unique",
       }),
 
-      password: password({ validation: { isRequired: true } }),
+      password: password({
+        validation: {
+          length: { min: 10, max: 100 },
+          isRequired: true,
+          rejectCommon: true,
+        },
+        bcrypt: require("bcryptjs"),
+      }),
 
       // Role based user access.
       role: select({
@@ -60,7 +67,6 @@ export const lists: Lists = {
           { label: "User", value: "user" },
         ],
         defaultValue: "user",
-        // db: { map: "my_select" },
         validation: { isRequired: true },
         ui: { displayMode: "select" },
       }),
@@ -75,38 +81,32 @@ export const lists: Lists = {
         defaultValue: "active",
       }),
 
-      // https://keystonejs.com/docs/config/config#storage-images-and-files
-      // a User has a profile image
-      //avatar: image({ storage: "" }),
-
       // give the user the ability to edit - yes/no
-      isPrivileged: checkbox({ defaultValue: false }),
+      isPrivileged: checkbox({
+        defaultValue: false,
+        db: { map: "is_privileged" },
+        graphql: {
+          isNonNull: {
+            read: true,
+            create: true,
+          },
+        },
+      }),
 
       // Green threshold allows the user to see what kinds of scores movies end up with once their preferences are set
       // and choose a lowest score for the movie to receive the green tag on the movie details
       slopRating: integer({ defaultValue: 0, db: { map: "my_integer" } }), // this has to be relation based on UserPreference
 
-      // we can use this field to see what Posts this User has authored
-      //   more on that in the Post list below
-      posts: relationship({ ref: "Post.assignedTo", many: true }),
-
-      movies: relationship({ ref: "Movie.assignedTo", many: true }),
-
-      // a User can add many movies to a wishlist
-      //wishlist: relationship({ ref: "Movie.title", many: true }),
-
-      // relates movies to users
+      // RELATIONSHIPS
+      posts: relationship({ ref: "Post.author", many: true }),
+      movies: relationship({ ref: "Movie.author", many: true }),
       wishlist: relationship({
-        // we could have used 'Slop', but then the relationship would only be 1-way
-        ref: "Movie.wishlist",
-
+        ref: "Movie",
         // a User can have many movies part of a wishlist
         many: true,
       }),
-
       // a User can watch many movies
-      //watched: relationship({ ref: "Movie.title", many: true }),
-
+      watched: relationship({ ref: "Movie", many: true }),
       // UserPreference to personalize a Slop experience
       preferences: relationship({ ref: "UserPreference.user", many: true }),
 
@@ -151,7 +151,7 @@ export const lists: Lists = {
       photo: image({ storage: "my_S3_images" }),
 
       // with this field, you can set a User as the author for a Post
-      assignedTo: relationship({
+      author: relationship({
         // we could have used 'User', but then the relationship would only be 1-way
         ref: "User.posts",
 
@@ -231,8 +231,8 @@ export const lists: Lists = {
 
     // this is the fields for our Tag list
     fields: {
-      name: text(),
-      // this can be helpful to find out all the Posts associated with a Tag
+      name: text({ validation: { isRequired: true } }),
+      // RELATIONSHIPS
       posts: relationship({ ref: "Post.keywords", many: true }),
       movies: relationship({ ref: "Movie.keywords", many: true }),
     },
@@ -242,7 +242,7 @@ export const lists: Lists = {
     access: allowAll,
 
     fields: {
-      assignedTo: relationship({
+      author: relationship({
         // we could have used 'User', but then the relationship would only be 1-way
         ref: "User.movies",
 
@@ -260,34 +260,23 @@ export const lists: Lists = {
         many: false,
       }),
       title: text({ validation: { isRequired: true } }),
-      sortTitle: text({ validation: { isRequired: true } }), //is this needed? Can we sort by title?
+      description: text({ validation: { isRequired: true } }),
+      releaseYear: integer({ defaultValue: 0, db: { map: "my_releaseYear" } }),
+      runtime: integer({ defaultValue: 0, db: { map: "my_runtime" } }),
+      photo: image({ storage: "my_S3_images" }),
       tomatoScore: integer({
         defaultValue: 0,
         db: { map: "my_tomatoScore" },
-        validation: {
-          isRequired: true,
-        },
-        isIndexed: "unique",
       }),
-
-      runtime: integer({ defaultValue: 0, db: { map: "my_runtime" } }),
-      releaseYear: integer({ defaultValue: 0, db: { map: "my_releaseYear" } }),
+      howToWatch: text(),
       handicap: integer({ defaultValue: 0, db: { map: "my_handicap" } }),
-      description: text({ validation: { isRequired: true } }),
-      decade: integer({ defaultValue: 0, db: { map: "my_decade" } }),
-      photo: image({ storage: "my_S3_images" }),
 
-      wishlist: relationship({ ref: "User.wishlist", many: false }),
-      posts: relationship({ ref: "Post.slops", many: false }),
+      // RELATIONSHIPS
+      posts: relationship({ ref: "Post.slops", many: true }),
       keywords: relationship({ ref: "Keyword.movies", many: true }),
-      howToWatch: text({ validation: { isRequired: true } }),
-      // with this field, you can add some Slops to Posts
-
-      // movieList: relationship({ ref: "User.wishlist", many: false }),
-      // movieWatched: relationship({ ref: "User.watched", many: false }),
     },
   }),
-
+  // both fields req
   Preference: list({
     access: allowAll,
     fields: {
@@ -304,20 +293,28 @@ export const lists: Lists = {
             value: 3,
           },
           {
-            label: "Hairstyles",
+            label: "Person",
             value: 4,
           },
           {
-            label: "Other Preferences",
+            label: "Hairstyles",
             value: 5,
           },
           {
-            label: "Green threshold",
+            label: "Filter",
             value: 6,
+          },
+          {
+            label: "Handicap",
+            value: 7,
+          },
+          {
+            label: "Preference",
+            value: 8,
           },
         ],
       }),
-      name: text(),
+      name: text(), // required
     },
   }),
 
@@ -328,7 +325,11 @@ export const lists: Lists = {
       // this can be helpful to find out all the Posts associated with a Tag
       user: relationship({ ref: "User.preferences", many: false }),
       preference: relationship({ ref: "Preference", many: true }),
-      // preference_name: relationship({ ref: "Preference.name", many: true }),
+      // value of preference (number) required
+      preference_category: integer({
+        defaultValue: 0,
+        db: { map: "my_integer" },
+      }),
     },
   }),
 };

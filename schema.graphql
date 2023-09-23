@@ -8,7 +8,7 @@ type User {
   password: PasswordState
   role: UserRoleType
   status: String
-  isPrivileged: Boolean
+  isPrivileged: Boolean!
   slopRating: Int
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
@@ -16,6 +16,8 @@ type User {
   moviesCount(where: MovieWhereInput! = {}): Int
   wishlist(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   wishlistCount(where: MovieWhereInput! = {}): Int
+  watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  watchedCount(where: MovieWhereInput! = {}): Int
   preferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
   preferencesCount(where: UserPreferenceWhereInput! = {}): Int
   createdAt: DateTime
@@ -53,6 +55,7 @@ input UserWhereInput {
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
   wishlist: MovieManyRelationFilter
+  watched: MovieManyRelationFilter
   preferences: UserPreferenceManyRelationFilter
   createdAt: DateTimeNullableFilter
   lastLoginDate: DateTimeNullableFilter
@@ -191,6 +194,7 @@ input UserUpdateInput {
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
   wishlist: MovieRelateToManyForUpdateInput
+  watched: MovieRelateToManyForUpdateInput
   preferences: UserPreferenceRelateToManyForUpdateInput
   createdAt: DateTime
   lastLoginDate: DateTime
@@ -228,11 +232,12 @@ input UserCreateInput {
   password: String
   role: UserRoleType
   status: String
-  isPrivileged: Boolean
+  isPrivileged: Boolean! = false
   slopRating: Int
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
   wishlist: MovieRelateToManyForCreateInput
+  watched: MovieRelateToManyForCreateInput
   preferences: UserPreferenceRelateToManyForCreateInput
   createdAt: DateTime
   lastLoginDate: DateTime
@@ -258,7 +263,7 @@ type Post {
   title: String
   content: Post_content_Document
   photo: ImageFieldOutput
-  assignedTo: User
+  author: User
   status: String
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
@@ -296,7 +301,7 @@ input PostWhereInput {
   NOT: [PostWhereInput!]
   id: IDFilter
   title: StringFilter
-  assignedTo: UserWhereInput
+  author: UserWhereInput
   status: StringNullableFilter
   keywords: KeywordManyRelationFilter
   slops: MovieManyRelationFilter
@@ -318,7 +323,7 @@ input PostUpdateInput {
   title: String
   content: JSON
   photo: ImageFieldInput
-  assignedTo: UserRelateToOneForUpdateInput
+  author: UserRelateToOneForUpdateInput
   status: String
   keywords: KeywordRelateToManyForUpdateInput
   slops: MovieRelateToManyForUpdateInput
@@ -353,7 +358,7 @@ input PostCreateInput {
   title: String
   content: JSON
   photo: ImageFieldInput
-  assignedTo: UserRelateToOneForCreateInput
+  author: UserRelateToOneForCreateInput
   status: String
   keywords: KeywordRelateToManyForCreateInput
   slops: MovieRelateToManyForCreateInput
@@ -416,26 +421,23 @@ input KeywordCreateInput {
 
 type Movie {
   id: ID!
-  assignedTo: User
+  author: User
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
   photo: ImageFieldOutput
-  wishlist: User
-  posts: Post
+  tomatoScore: Int
+  howToWatch: String
+  handicap: Int
+  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
-  howToWatch: String
 }
 
 input MovieWhereUniqueInput {
   id: ID
-  tomatoScore: Int
 }
 
 input MovieWhereInput {
@@ -443,66 +445,41 @@ input MovieWhereInput {
   OR: [MovieWhereInput!]
   NOT: [MovieWhereInput!]
   id: IDFilter
-  assignedTo: UserWhereInput
+  author: UserWhereInput
   title: StringFilter
-  sortTitle: StringFilter
-  tomatoScore: IntFilter
-  runtime: IntNullableFilter
-  releaseYear: IntNullableFilter
-  handicap: IntNullableFilter
   description: StringFilter
-  decade: IntNullableFilter
-  wishlist: UserWhereInput
-  posts: PostWhereInput
-  keywords: KeywordManyRelationFilter
+  releaseYear: IntNullableFilter
+  runtime: IntNullableFilter
+  tomatoScore: IntNullableFilter
   howToWatch: StringFilter
-}
-
-input IntFilter {
-  equals: Int
-  in: [Int!]
-  notIn: [Int!]
-  lt: Int
-  lte: Int
-  gt: Int
-  gte: Int
-  not: IntFilter
+  handicap: IntNullableFilter
+  posts: PostManyRelationFilter
+  keywords: KeywordManyRelationFilter
 }
 
 input MovieOrderByInput {
   id: OrderDirection
   title: OrderDirection
-  sortTitle: OrderDirection
-  tomatoScore: OrderDirection
-  runtime: OrderDirection
-  releaseYear: OrderDirection
-  handicap: OrderDirection
   description: OrderDirection
-  decade: OrderDirection
+  releaseYear: OrderDirection
+  runtime: OrderDirection
+  tomatoScore: OrderDirection
   howToWatch: OrderDirection
+  handicap: OrderDirection
 }
 
 input MovieUpdateInput {
-  assignedTo: UserRelateToOneForUpdateInput
+  author: UserRelateToOneForUpdateInput
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
   photo: ImageFieldInput
-  wishlist: UserRelateToOneForUpdateInput
-  posts: PostRelateToOneForUpdateInput
-  keywords: KeywordRelateToManyForUpdateInput
+  tomatoScore: Int
   howToWatch: String
-}
-
-input PostRelateToOneForUpdateInput {
-  create: PostCreateInput
-  connect: PostWhereUniqueInput
-  disconnect: Boolean
+  handicap: Int
+  posts: PostRelateToManyForUpdateInput
+  keywords: KeywordRelateToManyForUpdateInput
 }
 
 input MovieUpdateArgs {
@@ -511,25 +488,17 @@ input MovieUpdateArgs {
 }
 
 input MovieCreateInput {
-  assignedTo: UserRelateToOneForCreateInput
+  author: UserRelateToOneForCreateInput
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
   photo: ImageFieldInput
-  wishlist: UserRelateToOneForCreateInput
-  posts: PostRelateToOneForCreateInput
-  keywords: KeywordRelateToManyForCreateInput
+  tomatoScore: Int
   howToWatch: String
-}
-
-input PostRelateToOneForCreateInput {
-  create: PostCreateInput
-  connect: PostWhereUniqueInput
+  handicap: Int
+  posts: PostRelateToManyForCreateInput
+  keywords: KeywordRelateToManyForCreateInput
 }
 
 type Preference {
@@ -577,6 +546,7 @@ type UserPreference {
   user: User
   preference(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
   preferenceCount(where: PreferenceWhereInput! = {}): Int
+  preference_category: Int
 }
 
 input UserPreferenceWhereUniqueInput {
@@ -590,6 +560,7 @@ input UserPreferenceWhereInput {
   id: IDFilter
   user: UserWhereInput
   preference: PreferenceManyRelationFilter
+  preference_category: IntNullableFilter
 }
 
 input PreferenceManyRelationFilter {
@@ -600,11 +571,13 @@ input PreferenceManyRelationFilter {
 
 input UserPreferenceOrderByInput {
   id: OrderDirection
+  preference_category: OrderDirection
 }
 
 input UserPreferenceUpdateInput {
   user: UserRelateToOneForUpdateInput
   preference: PreferenceRelateToManyForUpdateInput
+  preference_category: Int
 }
 
 input PreferenceRelateToManyForUpdateInput {
@@ -622,6 +595,7 @@ input UserPreferenceUpdateArgs {
 input UserPreferenceCreateInput {
   user: UserRelateToOneForCreateInput
   preference: PreferenceRelateToManyForCreateInput
+  preference_category: Int
 }
 
 input PreferenceRelateToManyForCreateInput {
