@@ -8,10 +8,18 @@ type User {
   password: PasswordState
   role: UserRoleType
   status: String
-  isPrivileged: Boolean
+  isPrivileged: Boolean!
   slopRating: Int
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
+  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  moviesCount(where: MovieWhereInput! = {}): Int
+  wishlist(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  wishlistCount(where: MovieWhereInput! = {}): Int
+  watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  watchedCount(where: MovieWhereInput! = {}): Int
+  preferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
+  preferencesCount(where: UserPreferenceWhereInput! = {}): Int
   createdAt: DateTime
   lastLoginDate: DateTime
 }
@@ -45,6 +53,10 @@ input UserWhereInput {
   isPrivileged: BooleanFilter
   slopRating: IntNullableFilter
   posts: PostManyRelationFilter
+  movies: MovieManyRelationFilter
+  wishlist: MovieManyRelationFilter
+  watched: MovieManyRelationFilter
+  preferences: UserPreferenceManyRelationFilter
   createdAt: DateTimeNullableFilter
   lastLoginDate: DateTimeNullableFilter
 }
@@ -131,6 +143,18 @@ input PostManyRelationFilter {
   none: PostWhereInput
 }
 
+input MovieManyRelationFilter {
+  every: MovieWhereInput
+  some: MovieWhereInput
+  none: MovieWhereInput
+}
+
+input UserPreferenceManyRelationFilter {
+  every: UserPreferenceWhereInput
+  some: UserPreferenceWhereInput
+  none: UserPreferenceWhereInput
+}
+
 input DateTimeNullableFilter {
   equals: DateTime
   in: [DateTime!]
@@ -168,6 +192,10 @@ input UserUpdateInput {
   isPrivileged: Boolean
   slopRating: Int
   posts: PostRelateToManyForUpdateInput
+  movies: MovieRelateToManyForUpdateInput
+  wishlist: MovieRelateToManyForUpdateInput
+  watched: MovieRelateToManyForUpdateInput
+  preferences: UserPreferenceRelateToManyForUpdateInput
   createdAt: DateTime
   lastLoginDate: DateTime
 }
@@ -177,6 +205,20 @@ input PostRelateToManyForUpdateInput {
   set: [PostWhereUniqueInput!]
   create: [PostCreateInput!]
   connect: [PostWhereUniqueInput!]
+}
+
+input MovieRelateToManyForUpdateInput {
+  disconnect: [MovieWhereUniqueInput!]
+  set: [MovieWhereUniqueInput!]
+  create: [MovieCreateInput!]
+  connect: [MovieWhereUniqueInput!]
+}
+
+input UserPreferenceRelateToManyForUpdateInput {
+  disconnect: [UserPreferenceWhereUniqueInput!]
+  set: [UserPreferenceWhereUniqueInput!]
+  create: [UserPreferenceCreateInput!]
+  connect: [UserPreferenceWhereUniqueInput!]
 }
 
 input UserUpdateArgs {
@@ -190,9 +232,13 @@ input UserCreateInput {
   password: String
   role: UserRoleType
   status: String
-  isPrivileged: Boolean
+  isPrivileged: Boolean! = false
   slopRating: Int
   posts: PostRelateToManyForCreateInput
+  movies: MovieRelateToManyForCreateInput
+  wishlist: MovieRelateToManyForCreateInput
+  watched: MovieRelateToManyForCreateInput
+  preferences: UserPreferenceRelateToManyForCreateInput
   createdAt: DateTime
   lastLoginDate: DateTime
 }
@@ -202,20 +248,47 @@ input PostRelateToManyForCreateInput {
   connect: [PostWhereUniqueInput!]
 }
 
+input MovieRelateToManyForCreateInput {
+  create: [MovieCreateInput!]
+  connect: [MovieWhereUniqueInput!]
+}
+
+input UserPreferenceRelateToManyForCreateInput {
+  create: [UserPreferenceCreateInput!]
+  connect: [UserPreferenceWhereUniqueInput!]
+}
+
 type Post {
   id: ID!
   title: String
   content: Post_content_Document
+  photo: ImageFieldOutput
   author: User
   status: String
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
-  slops(where: SlopWhereInput! = {}, orderBy: [SlopOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SlopWhereUniqueInput): [Slop!]
-  slopsCount(where: SlopWhereInput! = {}): Int
+  slops(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  slopsCount(where: MovieWhereInput! = {}): Int
 }
 
 type Post_content_Document {
   document(hydrateRelationships: Boolean! = false): JSON!
+}
+
+type ImageFieldOutput {
+  id: ID!
+  filesize: Int!
+  width: Int!
+  height: Int!
+  extension: ImageExtension!
+  url: String!
+}
+
+enum ImageExtension {
+  jpg
+  png
+  webp
+  gif
 }
 
 input PostWhereUniqueInput {
@@ -231,19 +304,13 @@ input PostWhereInput {
   author: UserWhereInput
   status: StringNullableFilter
   keywords: KeywordManyRelationFilter
-  slops: SlopManyRelationFilter
+  slops: MovieManyRelationFilter
 }
 
 input KeywordManyRelationFilter {
   every: KeywordWhereInput
   some: KeywordWhereInput
   none: KeywordWhereInput
-}
-
-input SlopManyRelationFilter {
-  every: SlopWhereInput
-  some: SlopWhereInput
-  none: SlopWhereInput
 }
 
 input PostOrderByInput {
@@ -255,11 +322,19 @@ input PostOrderByInput {
 input PostUpdateInput {
   title: String
   content: JSON
+  photo: ImageFieldInput
   author: UserRelateToOneForUpdateInput
   status: String
   keywords: KeywordRelateToManyForUpdateInput
-  slops: SlopRelateToManyForUpdateInput
+  slops: MovieRelateToManyForUpdateInput
 }
+
+input ImageFieldInput {
+  upload: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input UserRelateToOneForUpdateInput {
   create: UserCreateInput
@@ -274,13 +349,6 @@ input KeywordRelateToManyForUpdateInput {
   connect: [KeywordWhereUniqueInput!]
 }
 
-input SlopRelateToManyForUpdateInput {
-  disconnect: [SlopWhereUniqueInput!]
-  set: [SlopWhereUniqueInput!]
-  create: [SlopCreateInput!]
-  connect: [SlopWhereUniqueInput!]
-}
-
 input PostUpdateArgs {
   where: PostWhereUniqueInput!
   data: PostUpdateInput!
@@ -289,10 +357,11 @@ input PostUpdateArgs {
 input PostCreateInput {
   title: String
   content: JSON
+  photo: ImageFieldInput
   author: UserRelateToOneForCreateInput
   status: String
   keywords: KeywordRelateToManyForCreateInput
-  slops: SlopRelateToManyForCreateInput
+  slops: MovieRelateToManyForCreateInput
 }
 
 input UserRelateToOneForCreateInput {
@@ -305,16 +374,13 @@ input KeywordRelateToManyForCreateInput {
   connect: [KeywordWhereUniqueInput!]
 }
 
-input SlopRelateToManyForCreateInput {
-  create: [SlopCreateInput!]
-  connect: [SlopWhereUniqueInput!]
-}
-
 type Keyword {
   id: ID!
   name: String
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
+  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  moviesCount(where: MovieWhereInput! = {}): Int
 }
 
 input KeywordWhereUniqueInput {
@@ -328,6 +394,7 @@ input KeywordWhereInput {
   id: IDFilter
   name: StringFilter
   posts: PostManyRelationFilter
+  movies: MovieManyRelationFilter
 }
 
 input KeywordOrderByInput {
@@ -338,6 +405,7 @@ input KeywordOrderByInput {
 input KeywordUpdateInput {
   name: String
   posts: PostRelateToManyForUpdateInput
+  movies: MovieRelateToManyForUpdateInput
 }
 
 input KeywordUpdateArgs {
@@ -348,64 +416,28 @@ input KeywordUpdateArgs {
 input KeywordCreateInput {
   name: String
   posts: PostRelateToManyForCreateInput
-}
-
-type Slop {
-  id: ID!
-  name: String
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
-  postsCount(where: PostWhereInput! = {}): Int
-}
-
-input SlopWhereUniqueInput {
-  id: ID
-}
-
-input SlopWhereInput {
-  AND: [SlopWhereInput!]
-  OR: [SlopWhereInput!]
-  NOT: [SlopWhereInput!]
-  id: IDFilter
-  name: StringFilter
-  posts: PostManyRelationFilter
-}
-
-input SlopOrderByInput {
-  id: OrderDirection
-  name: OrderDirection
-}
-
-input SlopUpdateInput {
-  name: String
-  posts: PostRelateToManyForUpdateInput
-}
-
-input SlopUpdateArgs {
-  where: SlopWhereUniqueInput!
-  data: SlopUpdateInput!
-}
-
-input SlopCreateInput {
-  name: String
-  posts: PostRelateToManyForCreateInput
+  movies: MovieRelateToManyForCreateInput
 }
 
 type Movie {
   id: ID!
+  author: User
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
+  photo: ImageFieldOutput
+  tomatoScore: Int
   howToWatch: String
+  handicap: Int
+  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
+  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  keywordsCount(where: KeywordWhereInput! = {}): Int
 }
 
 input MovieWhereUniqueInput {
   id: ID
-  tomatoScore: Int
 }
 
 input MovieWhereInput {
@@ -413,51 +445,41 @@ input MovieWhereInput {
   OR: [MovieWhereInput!]
   NOT: [MovieWhereInput!]
   id: IDFilter
+  author: UserWhereInput
   title: StringFilter
-  sortTitle: StringFilter
-  tomatoScore: IntFilter
-  runtime: IntNullableFilter
-  releaseYear: IntNullableFilter
-  handicap: IntNullableFilter
   description: StringFilter
-  decade: IntNullableFilter
+  releaseYear: IntNullableFilter
+  runtime: IntNullableFilter
+  tomatoScore: IntNullableFilter
   howToWatch: StringFilter
-}
-
-input IntFilter {
-  equals: Int
-  in: [Int!]
-  notIn: [Int!]
-  lt: Int
-  lte: Int
-  gt: Int
-  gte: Int
-  not: IntFilter
+  handicap: IntNullableFilter
+  posts: PostManyRelationFilter
+  keywords: KeywordManyRelationFilter
 }
 
 input MovieOrderByInput {
   id: OrderDirection
   title: OrderDirection
-  sortTitle: OrderDirection
-  tomatoScore: OrderDirection
-  runtime: OrderDirection
-  releaseYear: OrderDirection
-  handicap: OrderDirection
   description: OrderDirection
-  decade: OrderDirection
+  releaseYear: OrderDirection
+  runtime: OrderDirection
+  tomatoScore: OrderDirection
   howToWatch: OrderDirection
+  handicap: OrderDirection
 }
 
 input MovieUpdateInput {
+  author: UserRelateToOneForUpdateInput
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
+  photo: ImageFieldInput
+  tomatoScore: Int
   howToWatch: String
+  handicap: Int
+  posts: PostRelateToManyForUpdateInput
+  keywords: KeywordRelateToManyForUpdateInput
 }
 
 input MovieUpdateArgs {
@@ -466,15 +488,119 @@ input MovieUpdateArgs {
 }
 
 input MovieCreateInput {
+  author: UserRelateToOneForCreateInput
   title: String
-  sortTitle: String
-  tomatoScore: Int
-  runtime: Int
-  releaseYear: Int
-  handicap: Int
   description: String
-  decade: Int
+  releaseYear: Int
+  runtime: Int
+  photo: ImageFieldInput
+  tomatoScore: Int
   howToWatch: String
+  handicap: Int
+  posts: PostRelateToManyForCreateInput
+  keywords: KeywordRelateToManyForCreateInput
+}
+
+type Preference {
+  id: ID!
+  category: Int
+  name: String
+}
+
+input PreferenceWhereUniqueInput {
+  id: ID
+}
+
+input PreferenceWhereInput {
+  AND: [PreferenceWhereInput!]
+  OR: [PreferenceWhereInput!]
+  NOT: [PreferenceWhereInput!]
+  id: IDFilter
+  category: IntNullableFilter
+  name: StringFilter
+}
+
+input PreferenceOrderByInput {
+  id: OrderDirection
+  category: OrderDirection
+  name: OrderDirection
+}
+
+input PreferenceUpdateInput {
+  category: Int
+  name: String
+}
+
+input PreferenceUpdateArgs {
+  where: PreferenceWhereUniqueInput!
+  data: PreferenceUpdateInput!
+}
+
+input PreferenceCreateInput {
+  category: Int
+  name: String
+}
+
+type UserPreference {
+  id: ID!
+  user: User
+  preference(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
+  preferenceCount(where: PreferenceWhereInput! = {}): Int
+  preference_category: Int
+}
+
+input UserPreferenceWhereUniqueInput {
+  id: ID
+}
+
+input UserPreferenceWhereInput {
+  AND: [UserPreferenceWhereInput!]
+  OR: [UserPreferenceWhereInput!]
+  NOT: [UserPreferenceWhereInput!]
+  id: IDFilter
+  user: UserWhereInput
+  preference: PreferenceManyRelationFilter
+  preference_category: IntNullableFilter
+}
+
+input PreferenceManyRelationFilter {
+  every: PreferenceWhereInput
+  some: PreferenceWhereInput
+  none: PreferenceWhereInput
+}
+
+input UserPreferenceOrderByInput {
+  id: OrderDirection
+  preference_category: OrderDirection
+}
+
+input UserPreferenceUpdateInput {
+  user: UserRelateToOneForUpdateInput
+  preference: PreferenceRelateToManyForUpdateInput
+  preference_category: Int
+}
+
+input PreferenceRelateToManyForUpdateInput {
+  disconnect: [PreferenceWhereUniqueInput!]
+  set: [PreferenceWhereUniqueInput!]
+  create: [PreferenceCreateInput!]
+  connect: [PreferenceWhereUniqueInput!]
+}
+
+input UserPreferenceUpdateArgs {
+  where: UserPreferenceWhereUniqueInput!
+  data: UserPreferenceUpdateInput!
+}
+
+input UserPreferenceCreateInput {
+  user: UserRelateToOneForCreateInput
+  preference: PreferenceRelateToManyForCreateInput
+  preference_category: Int
+}
+
+input PreferenceRelateToManyForCreateInput {
+  create: [PreferenceCreateInput!]
+  connect: [PreferenceWhereUniqueInput!]
 }
 
 """
@@ -501,18 +627,24 @@ type Mutation {
   updateKeywords(data: [KeywordUpdateArgs!]!): [Keyword]
   deleteKeyword(where: KeywordWhereUniqueInput!): Keyword
   deleteKeywords(where: [KeywordWhereUniqueInput!]!): [Keyword]
-  createSlop(data: SlopCreateInput!): Slop
-  createSlops(data: [SlopCreateInput!]!): [Slop]
-  updateSlop(where: SlopWhereUniqueInput!, data: SlopUpdateInput!): Slop
-  updateSlops(data: [SlopUpdateArgs!]!): [Slop]
-  deleteSlop(where: SlopWhereUniqueInput!): Slop
-  deleteSlops(where: [SlopWhereUniqueInput!]!): [Slop]
   createMovie(data: MovieCreateInput!): Movie
   createMovies(data: [MovieCreateInput!]!): [Movie]
   updateMovie(where: MovieWhereUniqueInput!, data: MovieUpdateInput!): Movie
   updateMovies(data: [MovieUpdateArgs!]!): [Movie]
   deleteMovie(where: MovieWhereUniqueInput!): Movie
   deleteMovies(where: [MovieWhereUniqueInput!]!): [Movie]
+  createPreference(data: PreferenceCreateInput!): Preference
+  createPreferences(data: [PreferenceCreateInput!]!): [Preference]
+  updatePreference(where: PreferenceWhereUniqueInput!, data: PreferenceUpdateInput!): Preference
+  updatePreferences(data: [PreferenceUpdateArgs!]!): [Preference]
+  deletePreference(where: PreferenceWhereUniqueInput!): Preference
+  deletePreferences(where: [PreferenceWhereUniqueInput!]!): [Preference]
+  createUserPreference(data: UserPreferenceCreateInput!): UserPreference
+  createUserPreferences(data: [UserPreferenceCreateInput!]!): [UserPreference]
+  updateUserPreference(where: UserPreferenceWhereUniqueInput!, data: UserPreferenceUpdateInput!): UserPreference
+  updateUserPreferences(data: [UserPreferenceUpdateArgs!]!): [UserPreference]
+  deleteUserPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
+  deleteUserPreferences(where: [UserPreferenceWhereUniqueInput!]!): [UserPreference]
   endSession: Boolean!
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -545,12 +677,15 @@ type Query {
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keyword(where: KeywordWhereUniqueInput!): Keyword
   keywordsCount(where: KeywordWhereInput! = {}): Int
-  slops(where: SlopWhereInput! = {}, orderBy: [SlopOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SlopWhereUniqueInput): [Slop!]
-  slop(where: SlopWhereUniqueInput!): Slop
-  slopsCount(where: SlopWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   movie(where: MovieWhereUniqueInput!): Movie
   moviesCount(where: MovieWhereInput! = {}): Int
+  preferences(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
+  preference(where: PreferenceWhereUniqueInput!): Preference
+  preferencesCount(where: PreferenceWhereInput! = {}): Int
+  userPreferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
+  userPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
+  userPreferencesCount(where: UserPreferenceWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

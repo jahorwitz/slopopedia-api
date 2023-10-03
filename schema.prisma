@@ -12,55 +12,87 @@ generator client {
 }
 
 model User {
-  id            String       @id @default(uuid())
-  name          String       @unique @default("")
-  email         String       @unique @default("")
+  id            String           @id @default(uuid())
+  name          String           @unique @default("")
+  email         String           @unique @default("")
   password      String
-  role          UserRoleType @default(user)
-  status        String?      @default("active")
-  isPrivileged  Boolean      @default(false)
-  slopRating    Int?         @default(0) @map("my_integer")
-  posts         Post[]       @relation("Post_author")
-  createdAt     DateTime?    @default(now())
-  lastLoginDate DateTime?    @default(now())
+  role          UserRoleType     @default(user)
+  status        String?          @default("active")
+  isPrivileged  Boolean          @default(false) @map("is_privileged")
+  slopRating    Int?             @default(0) @map("my_integer")
+  posts         Post[]           @relation("Post_author")
+  movies        Movie[]          @relation("Movie_author")
+  wishlist      Movie[]          @relation("User_wishlist")
+  watched       Movie[]          @relation("User_watched")
+  preferences   UserPreference[] @relation("UserPreference_user")
+  createdAt     DateTime?        @default(now())
+  lastLoginDate DateTime?        @default(now())
 }
 
 model Post {
-  id       String    @id @default(uuid())
-  title    String    @default("")
-  content  Json      @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
-  author   User?     @relation("Post_author", fields: [authorId], references: [id])
-  authorId String?   @map("author")
-  status   String?
-  keywords Keyword[] @relation("Keyword_posts")
-  slops    Slop[]    @relation("Post_slops")
+  id              String    @id @default(uuid())
+  title           String    @default("")
+  content         Json      @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  photo_filesize  Int?
+  photo_extension String?
+  photo_width     Int?
+  photo_height    Int?
+  photo_id        String?
+  author          User?     @relation("Post_author", fields: [authorId], references: [id])
+  authorId        String?   @map("author")
+  status          String?
+  keywords        Keyword[] @relation("Keyword_posts")
+  slops           Movie[]   @relation("Movie_posts")
 
   @@index([authorId])
 }
 
 model Keyword {
-  id    String @id @default(uuid())
-  name  String @default("")
-  posts Post[] @relation("Keyword_posts")
-}
-
-model Slop {
-  id    String @id @default(uuid())
-  name  String @default("")
-  posts Post[] @relation("Post_slops")
+  id     String  @id @default(uuid())
+  name   String  @default("")
+  posts  Post[]  @relation("Keyword_posts")
+  movies Movie[] @relation("Keyword_movies")
 }
 
 model Movie {
-  id          String @id @default(uuid())
-  title       String @default("")
-  sortTitle   String @default("")
-  tomatoScore Int    @unique @default(0) @map("my_tomatoScore")
-  runtime     Int?   @default(0) @map("my_runtime")
-  releaseYear Int?   @default(0) @map("my_releaseYear")
-  handicap    Int?   @default(0) @map("my_handicap")
-  description String @default("")
-  decade      Int?   @default(0) @map("my_decade")
-  howToWatch  String @default("")
+  id                 String    @id @default(uuid())
+  author             User?     @relation("Movie_author", fields: [authorId], references: [id])
+  authorId           String?   @map("author")
+  title              String    @default("")
+  description        String    @default("")
+  releaseYear        Int?      @default(0) @map("my_releaseYear")
+  runtime            Int?      @default(0) @map("my_runtime")
+  photo_filesize     Int?
+  photo_extension    String?
+  photo_width        Int?
+  photo_height       Int?
+  photo_id           String?
+  tomatoScore        Int?      @default(0) @map("my_tomatoScore")
+  howToWatch         String    @default("")
+  handicap           Int?      @default(0) @map("my_handicap")
+  posts              Post[]    @relation("Movie_posts")
+  keywords           Keyword[] @relation("Keyword_movies")
+  from_User_wishlist User[]    @relation("User_wishlist")
+  from_User_watched  User[]    @relation("User_watched")
+
+  @@index([authorId])
+}
+
+model Preference {
+  id                             String           @id @default(uuid())
+  category                       Int?
+  name                           String           @default("")
+  from_UserPreference_preference UserPreference[] @relation("UserPreference_preference")
+}
+
+model UserPreference {
+  id                  String       @id @default(uuid())
+  user                User?        @relation("UserPreference_user", fields: [userId], references: [id])
+  userId              String?      @map("user")
+  preference          Preference[] @relation("UserPreference_preference")
+  preference_category Int?         @default(0) @map("my_integer")
+
+  @@index([userId])
 }
 
 enum UserRoleType {
