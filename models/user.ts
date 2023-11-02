@@ -12,9 +12,21 @@ import type { Lists } from ".keystone/types";
 
 export const User: ListConfig<Lists.User.TypeInfo<any>, any> = list({
   access: {
-    operation: {
-      query: ({ session }) =>
+    item: {
+      create: ({ session }) =>
         !!session?.data.isAdmin && session.data.status === "active",
+      update: async ({ session, item }) => {
+        // if this user is the same as the logged in user OR the logged in user is an admin, allow the operation
+        return (
+          (!!session?.data.id && session.data.id === item.id) ||
+          !!session?.data.isAdmin
+        );
+      },
+      delete: ({ session }) =>
+        !!session?.data.isAdmin && session.data.status === "active",
+    },
+    operation: {
+      query: ({ session }) => session.data.status === "active",
       create: ({ session }) =>
         !!session?.data.isAdmin && session.data.status === "active",
       update: ({ session }) =>
