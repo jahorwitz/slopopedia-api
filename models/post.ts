@@ -25,9 +25,9 @@ export const Post: ListConfig<Lists.Post.TypeInfo<any>, any> = list({
     },
     operation: {
       query: () => true,
-      create: ({ session }) => session.data.status === "active",
-      update: ({ session }) => session.data.status === "active",
-      delete: ({ session }) => session.data.status === "active",
+      create: ({ session }) => session?.data.status === "active",
+      update: ({ session }) => session?.data.status === "active",
+      delete: ({ session }) => session?.data.status === "active",
     },
   },
   fields: {
