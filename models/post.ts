@@ -1,6 +1,12 @@
 import { list } from "@keystone-6/core";
 import type { ListConfig } from "@keystone-6/core";
-import { text, select, image, relationship } from "@keystone-6/core/fields";
+import {
+  text,
+  select,
+  image,
+  relationship,
+  timestamp,
+} from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
 
 export const Post: ListConfig<Lists.Post.TypeInfo<any>, any> = list({
@@ -52,6 +58,10 @@ export const Post: ListConfig<Lists.Post.TypeInfo<any>, any> = list({
         inlineConnect: true,
       },
       many: false,
+    }),
+
+    createdAt: timestamp({
+      defaultValue: { kind: "now" },
     }),
 
     status: select({

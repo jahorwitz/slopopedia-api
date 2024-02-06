@@ -528,6 +528,7 @@ type Post {
   content: String
   photo: ImageFieldOutput
   author: User
+  createdAt: DateTime
   status: String
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
@@ -547,6 +548,7 @@ input PostWhereInput {
   title: StringFilter
   content: StringFilter
   author: UserWhereInput
+  createdAt: DateTimeNullableFilter
   status: StringNullableFilter
   keywords: KeywordManyRelationFilter
   movies: MovieManyRelationFilter
@@ -570,6 +572,7 @@ input PostOrderByInput {
   id: OrderDirection
   title: OrderDirection
   content: OrderDirection
+  createdAt: OrderDirection
   status: OrderDirection
 }
 
@@ -578,6 +581,7 @@ input PostUpdateInput {
   content: String
   photo: ImageFieldInput
   author: UserRelateToOneForUpdateInput
+  createdAt: DateTime
   status: String
   keywords: KeywordRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
@@ -593,6 +597,7 @@ input PostCreateInput {
   content: String
   photo: ImageFieldInput
   author: UserRelateToOneForCreateInput
+  createdAt: DateTime
   status: String
   keywords: KeywordRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
