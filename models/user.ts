@@ -21,16 +21,19 @@ export const User: ListConfig<Lists.User.TypeInfo<any>, any> = list({
           !!session?.data.isAdmin
         );
       },
-      delete: ({ session }) =>
-        !!session?.data.isAdmin && session.data.status === "active",
+      delete: async ({ session, item }) => {
+        // if this user is the same as the logged in user OR the logged in user is an admin, allow the operation
+        return (
+          (!!session?.data.id && session.data.id === item.id) ||
+          !!session?.data.isAdmin
+        );
+      },
     },
     operation: {
       query: () => true,
       create: () => true,
-      update: ({ session }) =>
-        !!session?.data.isAdmin && session.data.status === "active",
-      delete: ({ session }) =>
-        !!session?.data.isAdmin && session.data.status === "active",
+      update: () => true,
+      delete: () => true,
     },
   },
   fields: {
