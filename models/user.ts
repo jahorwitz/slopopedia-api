@@ -78,11 +78,18 @@ export const User: ListConfig<Lists.User.TypeInfo<any>, any> = list({
         description: "Fests this user has created",
       },
     }),
-    fests: relationship({
+    festAttendees: relationship({
       ref: "Fest.attendees",
       many: true,
       ui: {
         description: "Fests this user is involved with as an attendee",
+      },
+    }),
+    festInvitees: relationship({
+      ref: "Fest.invitees",
+      many: true,
+      ui: {
+        description: "Fests this user is involved with as an invitee",
       },
     }),
     festVotes: relationship({
