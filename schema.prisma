@@ -97,6 +97,7 @@ model Post {
   photo_id        String?
   author          User?     @relation("Post_author", fields: [authorId], references: [id])
   authorId        String?   @map("author")
+  createdAt       DateTime? @default(now())
   status          String?
   keywords        Keyword[] @relation("Keyword_posts")
   movies          Movie[]   @relation("Movie_posts")
