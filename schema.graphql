@@ -9,6 +9,8 @@ type Fest {
   creator: User
   attendees(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   attendeesCount(where: UserWhereInput! = {}): Int
+  invitees(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
+  inviteesCount(where: UserWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
   festVotes(where: FestVoteWhereInput! = {}, orderBy: [FestVoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestVoteWhereUniqueInput): [FestVote!]
@@ -33,6 +35,7 @@ input FestWhereInput {
   endDate: CalendarDayFilter
   creator: UserWhereInput
   attendees: UserManyRelationFilter
+  invitees: UserManyRelationFilter
   movies: MovieManyRelationFilter
   festVotes: FestVoteManyRelationFilter
   festNotes: FestNoteManyRelationFilter
@@ -130,6 +133,7 @@ input FestUpdateInput {
   endDate: CalendarDay
   creator: UserRelateToOneForUpdateInput
   attendees: UserRelateToManyForUpdateInput
+  invitees: UserRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
   festVotes: FestVoteRelateToManyForUpdateInput
   festNotes: FestNoteRelateToManyForUpdateInput
@@ -180,6 +184,7 @@ input FestCreateInput {
   endDate: CalendarDay
   creator: UserRelateToOneForCreateInput
   attendees: UserRelateToManyForCreateInput
+  invitees: UserRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
   festVotes: FestVoteRelateToManyForCreateInput
   festNotes: FestNoteRelateToManyForCreateInput
@@ -697,8 +702,10 @@ type User {
   preferencesCount(where: UserPreferenceWhereInput! = {}): Int
   myFests(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
   myFestsCount(where: FestWhereInput! = {}): Int
-  fests(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
-  festsCount(where: FestWhereInput! = {}): Int
+  festAttendees(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  festAttendeesCount(where: FestWhereInput! = {}): Int
+  festInvitees(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  festInviteesCount(where: FestWhereInput! = {}): Int
   festVotes(where: FestVoteWhereInput! = {}, orderBy: [FestVoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestVoteWhereUniqueInput): [FestVote!]
   festVotesCount(where: FestVoteWhereInput! = {}): Int
   festNotes(where: FestNoteWhereInput! = {}, orderBy: [FestNoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestNoteWhereUniqueInput): [FestNote!]
@@ -732,7 +739,8 @@ input UserWhereInput {
   watched: MovieManyRelationFilter
   preferences: UserPreferenceManyRelationFilter
   myFests: FestManyRelationFilter
-  fests: FestManyRelationFilter
+  festAttendees: FestManyRelationFilter
+  festInvitees: FestManyRelationFilter
   festVotes: FestVoteManyRelationFilter
   festNotes: FestNoteManyRelationFilter
   createdAt: DateTimeNullableFilter
@@ -772,7 +780,8 @@ input UserUpdateInput {
   watched: MovieRelateToManyForUpdateInput
   preferences: UserPreferenceRelateToManyForUpdateInput
   myFests: FestRelateToManyForUpdateInput
-  fests: FestRelateToManyForUpdateInput
+  festAttendees: FestRelateToManyForUpdateInput
+  festInvitees: FestRelateToManyForUpdateInput
   festVotes: FestVoteRelateToManyForUpdateInput
   festNotes: FestNoteRelateToManyForUpdateInput
   createdAt: DateTime
@@ -803,7 +812,8 @@ input UserCreateInput {
   watched: MovieRelateToManyForCreateInput
   preferences: UserPreferenceRelateToManyForCreateInput
   myFests: FestRelateToManyForCreateInput
-  fests: FestRelateToManyForCreateInput
+  festAttendees: FestRelateToManyForCreateInput
+  festInvitees: FestRelateToManyForCreateInput
   festVotes: FestVoteRelateToManyForCreateInput
   festNotes: FestNoteRelateToManyForCreateInput
   createdAt: DateTime

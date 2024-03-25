@@ -53,7 +53,18 @@ export const Fest: ListConfig<Lists.Fest.TypeInfo<any>, any> = list({
       many: false,
     }),
     attendees: relationship({
-      ref: "User.fests",
+      ref: "User.festAttendees",
+      ui: {
+        displayMode: "cards",
+        cardFields: ["username", "email"],
+        inlineEdit: { fields: ["username", "email"] },
+        linkToItem: true,
+        inlineConnect: true,
+      },
+      many: true,
+    }),
+    invitees: relationship({
+      ref: "User.festInvitees",
       ui: {
         displayMode: "cards",
         cardFields: ["username", "email"],
