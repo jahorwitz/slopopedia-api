@@ -408,6 +408,7 @@ type Movie {
   postsCount(where: PostWhereInput! = {}): Int
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
+  status: String
 }
 
 type ImageFieldOutput {
@@ -445,6 +446,7 @@ input MovieWhereInput {
   handicap: IntNullableFilter
   posts: PostManyRelationFilter
   keywords: KeywordManyRelationFilter
+  status: StringNullableFilter
 }
 
 input IntNullableFilter {
@@ -464,6 +466,20 @@ input KeywordManyRelationFilter {
   none: KeywordWhereInput
 }
 
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: StringNullableFilter
+}
+
 input MovieOrderByInput {
   id: OrderDirection
   title: OrderDirection
@@ -473,6 +489,7 @@ input MovieOrderByInput {
   tomatoScore: OrderDirection
   howToWatch: OrderDirection
   handicap: OrderDirection
+  status: OrderDirection
 }
 
 input MovieUpdateInput {
@@ -487,6 +504,7 @@ input MovieUpdateInput {
   handicap: Int
   posts: PostRelateToManyForUpdateInput
   keywords: KeywordRelateToManyForUpdateInput
+  status: String
 }
 
 input ImageFieldInput {
@@ -520,6 +538,7 @@ input MovieCreateInput {
   handicap: Int
   posts: PostRelateToManyForCreateInput
   keywords: KeywordRelateToManyForCreateInput
+  status: String
 }
 
 input KeywordRelateToManyForCreateInput {
@@ -555,20 +574,6 @@ input PostWhereInput {
   status: StringNullableFilter
   keywords: KeywordManyRelationFilter
   movies: MovieManyRelationFilter
-}
-
-input StringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  not: StringNullableFilter
 }
 
 input PostOrderByInput {

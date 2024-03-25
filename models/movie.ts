@@ -1,6 +1,12 @@
 import { list } from "@keystone-6/core";
 import type { ListConfig } from "@keystone-6/core";
-import { text, integer, image, relationship } from "@keystone-6/core/fields";
+import {
+  text,
+  integer,
+  image,
+  relationship,
+  select,
+} from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
 
 export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
@@ -63,5 +69,11 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
 
     posts: relationship({ ref: "Post.movies", many: true }),
     keywords: relationship({ ref: "Keyword.movies", many: true }),
+    status: select({
+      options: [
+        { label: "Published", value: "published" },
+        { label: "Draft", value: "draft" },
+      ],
+    }),
   },
 });
