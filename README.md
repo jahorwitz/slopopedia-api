@@ -8,6 +8,8 @@ Run
 npm run dev
 ```
 
+This is my code change in the feature-search-page branch. 
+
 To view the config for your new app, look at [./keystone.ts](./keystone.ts)
 
 This project starter is designed to give you a sense of the power Keystone can offer you, and show off some of its main features. It's also a pretty simple setup if you want to build out from it.
