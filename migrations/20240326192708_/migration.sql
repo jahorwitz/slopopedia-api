@@ -58,6 +58,7 @@ CREATE TABLE `Movie` (
     `tomatoScore` INTEGER NULL DEFAULT 0,
     `howToWatch` VARCHAR(191) NOT NULL DEFAULT '',
     `handicap` INTEGER NULL DEFAULT 0,
+    `status` VARCHAR(191) NULL,
 
     INDEX `Movie_author_idx`(`author`),
     PRIMARY KEY (`id`)
@@ -74,6 +75,7 @@ CREATE TABLE `Post` (
     `photo_height` INTEGER NULL,
     `photo_id` VARCHAR(191) NULL,
     `author` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
     `status` VARCHAR(191) NULL,
 
     INDEX `Post_author_idx`(`author`),
@@ -125,6 +127,15 @@ CREATE TABLE `_Fest_attendees` (
 
     UNIQUE INDEX `_Fest_attendees_AB_unique`(`A`, `B`),
     INDEX `_Fest_attendees_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_Fest_invitees` (
+    `A` VARCHAR(191) NOT NULL,
+    `B` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `_Fest_invitees_AB_unique`(`A`, `B`),
+    INDEX `_Fest_invitees_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -222,6 +233,12 @@ ALTER TABLE `_Fest_attendees` ADD CONSTRAINT `_Fest_attendees_A_fkey` FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE `_Fest_attendees` ADD CONSTRAINT `_Fest_attendees_B_fkey` FOREIGN KEY (`B`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_Fest_invitees` ADD CONSTRAINT `_Fest_invitees_A_fkey` FOREIGN KEY (`A`) REFERENCES `Fest`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_Fest_invitees` ADD CONSTRAINT `_Fest_invitees_B_fkey` FOREIGN KEY (`B`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_Fest_movies` ADD CONSTRAINT `_Fest_movies_A_fkey` FOREIGN KEY (`A`) REFERENCES `Fest`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

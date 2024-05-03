@@ -8,7 +8,12 @@ export default withAuth(
   config({
     server: {
       port: 8080,
-      cors: { origin: ["http://localhost:3000"] },
+      cors: {
+        origin: [
+          "http://localhost:3000",
+          "http://slopopedia.s3-website-us-east-1.amazonaws.com",
+        ],
+      },
     },
     db: {
       provider: "mysql",
@@ -38,5 +43,5 @@ export default withAuth(
     },
     lists: Models,
     session,
-  }),
+  })
 );
