@@ -570,7 +570,7 @@ input PostWhereInput {
   NOT: [PostWhereInput!]
   id: IDFilter
   title: StringFilter
-  content: StringFilter
+  content: StringNullableFilter
   author: UserWhereInput
   createdAt: DateTimeNullableFilter
   status: StringNullableFilter
