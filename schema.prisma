@@ -76,6 +76,7 @@ model Movie {
   howToWatch          String     @default("")
   handicap            Int?       @default(0)
   posts               Post[]     @relation("Movie_posts")
+  sounds              Sound[]    @relation("Movie_sounds")
   keywords            Keyword[]  @relation("Keyword_movies")
   status              String?
   from_Fest_movies    Fest[]     @relation("Fest_movies")
@@ -113,6 +114,22 @@ model Preference {
   userPreference UserPreference[]   @relation("UserPreference_preference")
 }
 
+model Sound {
+  id              String  @id @default(uuid())
+  author          User?   @relation("Sound_author", fields: [authorId], references: [id])
+  authorId        String? @map("author")
+  title           String  @default("")
+  photo_filesize  Int?
+  photo_extension String?
+  photo_width     Int?
+  photo_height    Int?
+  photo_id        String?
+  movies          Movie[] @relation("Movie_sounds")
+  audio           String  @default("")
+
+  @@index([authorId])
+}
+
 model User {
   id            String           @id @default(uuid())
   username      String           @unique @default("")
@@ -122,6 +139,7 @@ model User {
   isAdmin       Boolean          @default(false)
   posts         Post[]           @relation("Post_author")
   movies        Movie[]          @relation("Movie_author")
+  sounds        Sound[]          @relation("Sound_author")
   wishlist      Movie[]          @relation("User_wishlist")
   watched       Movie[]          @relation("User_watched")
   preferences   UserPreference[] @relation("UserPreference_user")
