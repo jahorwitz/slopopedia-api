@@ -53,10 +53,11 @@ model FestVote {
 }
 
 model Keyword {
-  id     String  @id @default(uuid())
-  name   String  @default("")
-  posts  Post[]  @relation("Keyword_posts")
-  movies Movie[] @relation("Keyword_movies")
+  id       String  @id @default(uuid())
+  name     String  @default("")
+  handicap Int?    @default(0)
+  posts    Post[]  @relation("Keyword_posts")
+  movies   Movie[] @relation("Keyword_movies")
 }
 
 model Movie {

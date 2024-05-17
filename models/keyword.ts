@@ -1,6 +1,6 @@
 import { list } from "@keystone-6/core";
 import type { ListConfig } from "@keystone-6/core";
-import { text, relationship } from "@keystone-6/core/fields";
+import { text, integer, relationship } from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
 
 export const Keyword: ListConfig<Lists.Keyword.TypeInfo<any>, any> = list({
@@ -14,6 +14,7 @@ export const Keyword: ListConfig<Lists.Keyword.TypeInfo<any>, any> = list({
   },
   fields: {
     name: text({ validation: { isRequired: true } }),
+    handicap: integer({ defaultValue: 0 }),
     posts: relationship({ ref: "Post.keywords", many: true }),
     movies: relationship({ ref: "Movie.keywords", many: true }),
   },
