@@ -333,6 +333,7 @@ input FestVoteCreateInput {
 type Keyword {
   id: ID!
   name: String
+  keywordType: KeywordType
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
@@ -349,6 +350,7 @@ input KeywordWhereInput {
   NOT: [KeywordWhereInput!]
   id: IDFilter
   name: StringFilter
+  keywordType: KeywordTypeWhereInput
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
 }
@@ -366,8 +368,15 @@ input KeywordOrderByInput {
 
 input KeywordUpdateInput {
   name: String
+  keywordType: KeywordTypeRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
+}
+
+input KeywordTypeRelateToOneForUpdateInput {
+  create: KeywordTypeCreateInput
+  connect: KeywordTypeWhereUniqueInput
+  disconnect: Boolean
 }
 
 input PostRelateToManyForUpdateInput {
@@ -384,13 +393,77 @@ input KeywordUpdateArgs {
 
 input KeywordCreateInput {
   name: String
+  keywordType: KeywordTypeRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
+}
+
+input KeywordTypeRelateToOneForCreateInput {
+  create: KeywordTypeCreateInput
+  connect: KeywordTypeWhereUniqueInput
 }
 
 input PostRelateToManyForCreateInput {
   create: [PostCreateInput!]
   connect: [PostWhereUniqueInput!]
+}
+
+type KeywordType {
+  id: ID!
+  name: String
+  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  keywordsCount(where: KeywordWhereInput! = {}): Int
+}
+
+input KeywordTypeWhereUniqueInput {
+  id: ID
+}
+
+input KeywordTypeWhereInput {
+  AND: [KeywordTypeWhereInput!]
+  OR: [KeywordTypeWhereInput!]
+  NOT: [KeywordTypeWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  keywords: KeywordManyRelationFilter
+}
+
+input KeywordManyRelationFilter {
+  every: KeywordWhereInput
+  some: KeywordWhereInput
+  none: KeywordWhereInput
+}
+
+input KeywordTypeOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+}
+
+input KeywordTypeUpdateInput {
+  name: String
+  keywords: KeywordRelateToManyForUpdateInput
+}
+
+input KeywordRelateToManyForUpdateInput {
+  disconnect: [KeywordWhereUniqueInput!]
+  set: [KeywordWhereUniqueInput!]
+  create: [KeywordCreateInput!]
+  connect: [KeywordWhereUniqueInput!]
+}
+
+input KeywordTypeUpdateArgs {
+  where: KeywordTypeWhereUniqueInput!
+  data: KeywordTypeUpdateInput!
+}
+
+input KeywordTypeCreateInput {
+  name: String
+  keywords: KeywordRelateToManyForCreateInput
+}
+
+input KeywordRelateToManyForCreateInput {
+  create: [KeywordCreateInput!]
+  connect: [KeywordWhereUniqueInput!]
 }
 
 type Movie {
@@ -460,12 +533,6 @@ input IntNullableFilter {
   not: IntNullableFilter
 }
 
-input KeywordManyRelationFilter {
-  every: KeywordWhereInput
-  some: KeywordWhereInput
-  none: KeywordWhereInput
-}
-
 input StringNullableFilter {
   equals: String
   in: [String!]
@@ -514,13 +581,6 @@ input ImageFieldInput {
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
-input KeywordRelateToManyForUpdateInput {
-  disconnect: [KeywordWhereUniqueInput!]
-  set: [KeywordWhereUniqueInput!]
-  create: [KeywordCreateInput!]
-  connect: [KeywordWhereUniqueInput!]
-}
-
 input MovieUpdateArgs {
   where: MovieWhereUniqueInput!
   data: MovieUpdateInput!
@@ -539,11 +599,6 @@ input MovieCreateInput {
   posts: PostRelateToManyForCreateInput
   keywords: KeywordRelateToManyForCreateInput
   status: String
-}
-
-input KeywordRelateToManyForCreateInput {
-  create: [KeywordCreateInput!]
-  connect: [KeywordWhereUniqueInput!]
 }
 
 type Post {
@@ -930,6 +985,12 @@ type Mutation {
   updateKeywords(data: [KeywordUpdateArgs!]!): [Keyword]
   deleteKeyword(where: KeywordWhereUniqueInput!): Keyword
   deleteKeywords(where: [KeywordWhereUniqueInput!]!): [Keyword]
+  createKeywordType(data: KeywordTypeCreateInput!): KeywordType
+  createKeywordTypes(data: [KeywordTypeCreateInput!]!): [KeywordType]
+  updateKeywordType(where: KeywordTypeWhereUniqueInput!, data: KeywordTypeUpdateInput!): KeywordType
+  updateKeywordTypes(data: [KeywordTypeUpdateArgs!]!): [KeywordType]
+  deleteKeywordType(where: KeywordTypeWhereUniqueInput!): KeywordType
+  deleteKeywordTypes(where: [KeywordTypeWhereUniqueInput!]!): [KeywordType]
   createMovie(data: MovieCreateInput!): Movie
   createMovies(data: [MovieCreateInput!]!): [Movie]
   updateMovie(where: MovieWhereUniqueInput!, data: MovieUpdateInput!): Movie
@@ -996,6 +1057,9 @@ type Query {
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keyword(where: KeywordWhereUniqueInput!): Keyword
   keywordsCount(where: KeywordWhereInput! = {}): Int
+  keywordTypes(where: KeywordTypeWhereInput! = {}, orderBy: [KeywordTypeOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordTypeWhereUniqueInput): [KeywordType!]
+  keywordType(where: KeywordTypeWhereUniqueInput!): KeywordType
+  keywordTypesCount(where: KeywordTypeWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   movie(where: MovieWhereUniqueInput!): Movie
   moviesCount(where: MovieWhereInput! = {}): Int
