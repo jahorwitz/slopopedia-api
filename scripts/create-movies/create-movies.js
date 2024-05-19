@@ -12,6 +12,11 @@ dotenv.config();
   );
   const [, ...lines] = keywordsFile.split("\n");
 
+  const apiUri =
+    process.env.NODE_ENV === "production"
+      ? "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql"
+      : "http://localhost:8080/api/graphql";
+
   // Get session token for API calls
   const {
     data: {
@@ -20,7 +25,7 @@ dotenv.config();
       },
     },
   } = await axios.post(
-    "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
+    apiUri,
     {
       query: `
         mutation Mutation($username: String!, $password: String!) {
@@ -51,7 +56,7 @@ dotenv.config();
       data: { createKeywords: createdKeywords },
     },
   } = await axios.post(
-    "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
+    apiUri,
     {
       query: `
       mutation CreateKeywords($data: [KeywordCreateInput!]!) {
@@ -80,7 +85,7 @@ dotenv.config();
       const results = await Promise.all(
         rows.map((movie) =>
           axios.post(
-            "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
+            apiUri,
             {
               query: `
             mutation Mutation($data: MovieCreateInput!) {
@@ -98,6 +103,7 @@ dotenv.config();
                   runtime: parseInt(movie["Runtime"]),
                   title: movie["Title"],
                   tomatoScore: parseInt(movie["Tomato Score"]),
+                  status: 'published',
                   ...(movie["Keywords"]
                     ? {
                         keywords: {
