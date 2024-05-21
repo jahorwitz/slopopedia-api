@@ -15,6 +15,7 @@ export const Keyword: ListConfig<Lists.Keyword.TypeInfo<any>, any> = list({
   fields: {
     name: text({ validation: { isRequired: true } }),
     handicap: integer({ defaultValue: 0 }),
+    keywordType: relationship({ ref: "KeywordType.keywords", many: false }),
     posts: relationship({ ref: "Post.keywords", many: true }),
     movies: relationship({ ref: "Movie.keywords", many: true }),
   },
