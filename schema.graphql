@@ -542,12 +542,6 @@ input SoundManyRelationFilter {
   none: SoundWhereInput
 }
 
-input KeywordManyRelationFilter {
-  every: KeywordWhereInput
-  some: KeywordWhereInput
-  none: KeywordWhereInput
-}
-
 input StringNullableFilter {
   equals: String
   in: [String!]
@@ -604,13 +598,6 @@ input SoundRelateToManyForUpdateInput {
   connect: [SoundWhereUniqueInput!]
 }
 
-input KeywordRelateToManyForUpdateInput {
-  disconnect: [KeywordWhereUniqueInput!]
-  set: [KeywordWhereUniqueInput!]
-  create: [KeywordCreateInput!]
-  connect: [KeywordWhereUniqueInput!]
-}
-
 input MovieUpdateArgs {
   where: MovieWhereUniqueInput!
   data: MovieUpdateInput!
@@ -635,11 +622,6 @@ input MovieCreateInput {
 input SoundRelateToManyForCreateInput {
   create: [SoundCreateInput!]
   connect: [SoundWhereUniqueInput!]
-}
-
-input KeywordRelateToManyForCreateInput {
-  create: [KeywordCreateInput!]
-  connect: [KeywordWhereUniqueInput!]
 }
 
 type Post {
