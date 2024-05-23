@@ -126,8 +126,6 @@ model Preference {
 
 model Sound {
   id              String  @id @default(uuid())
-  author          User?   @relation("Sound_author", fields: [authorId], references: [id])
-  authorId        String? @map("author")
   title           String  @default("")
   photo_filesize  Int?
   photo_extension String?
@@ -137,8 +135,6 @@ model Sound {
   movies          Movie[] @relation("Movie_sounds")
   audio_filesize  Int?
   audio_filename  String?
-
-  @@index([authorId])
 }
 
 model User {
@@ -150,7 +146,6 @@ model User {
   isAdmin       Boolean          @default(false)
   posts         Post[]           @relation("Post_author")
   movies        Movie[]          @relation("Movie_author")
-  sounds        Sound[]          @relation("Sound_author")
   wishlist      Movie[]          @relation("User_wishlist")
   watched       Movie[]          @relation("User_watched")
   preferences   UserPreference[] @relation("UserPreference_user")

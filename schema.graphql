@@ -773,7 +773,6 @@ input UserPreferenceRelateToManyForCreateInput {
 
 type Sound {
   id: ID!
-  author: User
   title: String
   photo: ImageFieldOutput
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
@@ -796,7 +795,6 @@ input SoundWhereInput {
   OR: [SoundWhereInput!]
   NOT: [SoundWhereInput!]
   id: IDFilter
-  author: UserWhereInput
   title: StringFilter
   movies: MovieManyRelationFilter
 }
@@ -807,7 +805,6 @@ input SoundOrderByInput {
 }
 
 input SoundUpdateInput {
-  author: UserRelateToOneForUpdateInput
   title: String
   photo: ImageFieldInput
   movies: MovieRelateToManyForUpdateInput
@@ -824,7 +821,6 @@ input SoundUpdateArgs {
 }
 
 input SoundCreateInput {
-  author: UserRelateToOneForCreateInput
   title: String
   photo: ImageFieldInput
   movies: MovieRelateToManyForCreateInput
@@ -842,8 +838,6 @@ type User {
   postsCount(where: PostWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
-  sounds(where: SoundWhereInput! = {}, orderBy: [SoundOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SoundWhereUniqueInput): [Sound!]
-  soundsCount(where: SoundWhereInput! = {}): Int
   wishlist(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   wishlistCount(where: MovieWhereInput! = {}): Int
   watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
@@ -885,7 +879,6 @@ input UserWhereInput {
   isAdmin: BooleanFilter
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
-  sounds: SoundManyRelationFilter
   wishlist: MovieManyRelationFilter
   watched: MovieManyRelationFilter
   preferences: UserPreferenceManyRelationFilter
@@ -927,7 +920,6 @@ input UserUpdateInput {
   isAdmin: Boolean
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
-  sounds: SoundRelateToManyForUpdateInput
   wishlist: MovieRelateToManyForUpdateInput
   watched: MovieRelateToManyForUpdateInput
   preferences: UserPreferenceRelateToManyForUpdateInput
@@ -960,7 +952,6 @@ input UserCreateInput {
   isAdmin: Boolean
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
-  sounds: SoundRelateToManyForCreateInput
   wishlist: MovieRelateToManyForCreateInput
   watched: MovieRelateToManyForCreateInput
   preferences: UserPreferenceRelateToManyForCreateInput
