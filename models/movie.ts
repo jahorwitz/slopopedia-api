@@ -75,6 +75,7 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
         { label: "Published", value: "published" },
         { label: "Draft", value: "draft" },
       ],
+      defaultValue: "draft",
     }),
   },
 });
