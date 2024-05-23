@@ -88,7 +88,7 @@ model Movie {
   handicap            Int?       @default(0)
   posts               Post[]     @relation("Movie_posts")
   keywords            Keyword[]  @relation("Keyword_movies")
-  status              String?
+  status              String?    @default("draft")
   from_Fest_movies    Fest[]     @relation("Fest_movies")
   from_FestVote_movie FestVote[] @relation("FestVote_movie")
   from_User_wishlist  User[]     @relation("User_wishlist")
