@@ -7,19 +7,50 @@ type Fest {
   startDate: CalendarDay
   endDate: CalendarDay
   creator: User
-  attendees(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
+  attendees(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserWhereUniqueInput
+  ): [User!]
   attendeesCount(where: UserWhereInput! = {}): Int
-  invitees(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
+  invitees(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserWhereUniqueInput
+  ): [User!]
   inviteesCount(where: UserWhereInput! = {}): Int
-  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
-  festVotes(where: FestVoteWhereInput! = {}, orderBy: [FestVoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestVoteWhereUniqueInput): [FestVote!]
+  festVotes(
+    where: FestVoteWhereInput! = {}
+    orderBy: [FestVoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestVoteWhereUniqueInput
+  ): [FestVote!]
   festVotesCount(where: FestVoteWhereInput! = {}): Int
-  festNotes(where: FestNoteWhereInput! = {}, orderBy: [FestNoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestNoteWhereUniqueInput): [FestNote!]
+  festNotes(
+    where: FestNoteWhereInput! = {}
+    orderBy: [FestNoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestNoteWhereUniqueInput
+  ): [FestNote!]
   festNotesCount(where: FestNoteWhereInput! = {}): Int
 }
 
-scalar CalendarDay @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
+scalar CalendarDay
+  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
 
 input FestWhereUniqueInput {
   id: ID
@@ -223,7 +254,8 @@ type FestNote {
   createdAt: DateTime
 }
 
-scalar DateTime @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
+scalar DateTime
+  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
 
 input FestNoteWhereUniqueInput {
   id: ID
@@ -290,7 +322,13 @@ input FestRelateToOneForCreateInput {
 type FestVote {
   id: ID!
   user: User
-  movie(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movie(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   movieCount(where: MovieWhereInput! = {}): Int
   fest: Fest
 }
@@ -335,9 +373,21 @@ type Keyword {
   name: String
   handicap: Int
   keywordType: KeywordType
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: PostWhereUniqueInput
+  ): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
-  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
 }
 
@@ -427,7 +477,13 @@ input PostRelateToManyForCreateInput {
 type KeywordType {
   id: ID!
   name: String
-  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  keywords(
+    where: KeywordWhereInput! = {}
+    orderBy: [KeywordOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: KeywordWhereUniqueInput
+  ): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
 }
 
@@ -493,9 +549,29 @@ type Movie {
   tomatoScore: Int
   howToWatch: String
   handicap: Int
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: PostWhereUniqueInput
+  ): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
-  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  sounds(
+    where: SoundWhereInput! = {}
+    orderBy: [SoundOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: SoundWhereUniqueInput
+  ): [Sound!]
+  soundsCount(where: SoundWhereInput! = {}): Int
+  keywords(
+    where: KeywordWhereInput! = {}
+    orderBy: [KeywordOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: KeywordWhereUniqueInput
+  ): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
   status: String
 }
@@ -534,8 +610,26 @@ input MovieWhereInput {
   howToWatch: StringFilter
   handicap: IntNullableFilter
   posts: PostManyRelationFilter
+  sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input SoundManyRelationFilter {
+  every: SoundWhereInput
+  some: SoundWhereInput
+  none: SoundWhereInput
 }
 
 input StringNullableFilter {
@@ -575,6 +669,7 @@ input MovieUpdateInput {
   howToWatch: String
   handicap: Int
   posts: PostRelateToManyForUpdateInput
+  sounds: SoundRelateToManyForUpdateInput
   keywords: KeywordRelateToManyForUpdateInput
   status: String
 }
@@ -583,8 +678,17 @@ input ImageFieldInput {
   upload: Upload!
 }
 
-"""The `Upload` scalar type represents a file upload."""
+"""
+The `Upload` scalar type represents a file upload.
+"""
 scalar Upload
+
+input SoundRelateToManyForUpdateInput {
+  disconnect: [SoundWhereUniqueInput!]
+  set: [SoundWhereUniqueInput!]
+  create: [SoundCreateInput!]
+  connect: [SoundWhereUniqueInput!]
+}
 
 input MovieUpdateArgs {
   where: MovieWhereUniqueInput!
@@ -602,8 +706,14 @@ input MovieCreateInput {
   howToWatch: String
   handicap: Int
   posts: PostRelateToManyForCreateInput
+  sounds: SoundRelateToManyForCreateInput
   keywords: KeywordRelateToManyForCreateInput
   status: String
+}
+
+input SoundRelateToManyForCreateInput {
+  create: [SoundCreateInput!]
+  connect: [SoundWhereUniqueInput!]
 }
 
 type Post {
@@ -614,9 +724,21 @@ type Post {
   author: User
   createdAt: DateTime
   status: String
-  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  keywords(
+    where: KeywordWhereInput! = {}
+    orderBy: [KeywordOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: KeywordWhereUniqueInput
+  ): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
-  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
 }
 
@@ -678,7 +800,13 @@ type Preference {
   category: Int
   name: String
   type: PreferenceTypeType
-  userPreference(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
+  userPreference(
+    where: UserPreferenceWhereInput! = {}
+    orderBy: [UserPreferenceOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserPreferenceWhereUniqueInput
+  ): [UserPreference!]
   userPreferenceCount(where: UserPreferenceWhereInput! = {}): Int
 }
 
@@ -753,6 +881,60 @@ input UserPreferenceRelateToManyForCreateInput {
   connect: [UserPreferenceWhereUniqueInput!]
 }
 
+type Sound {
+  id: ID!
+  title: String
+  photo: ImageFieldOutput
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
+  moviesCount(where: MovieWhereInput! = {}): Int
+  audio: String
+}
+
+input SoundWhereUniqueInput {
+  id: ID
+}
+
+input SoundWhereInput {
+  AND: [SoundWhereInput!]
+  OR: [SoundWhereInput!]
+  NOT: [SoundWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  movies: MovieManyRelationFilter
+  audio: StringFilter
+}
+
+input SoundOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  audio: OrderDirection
+}
+
+input SoundUpdateInput {
+  title: String
+  photo: ImageFieldInput
+  movies: MovieRelateToManyForUpdateInput
+  audio: String
+}
+
+input SoundUpdateArgs {
+  where: SoundWhereUniqueInput!
+  data: SoundUpdateInput!
+}
+
+input SoundCreateInput {
+  title: String
+  photo: ImageFieldInput
+  movies: MovieRelateToManyForCreateInput
+  audio: String
+}
+
 type User {
   id: ID!
   username: String
@@ -760,25 +942,85 @@ type User {
   password: PasswordState
   status: String
   isAdmin: Boolean
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: PostWhereUniqueInput
+  ): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
-  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
-  wishlist(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  wishlist(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   wishlistCount(where: MovieWhereInput! = {}): Int
-  watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  watched(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   watchedCount(where: MovieWhereInput! = {}): Int
-  preferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
+  preferences(
+    where: UserPreferenceWhereInput! = {}
+    orderBy: [UserPreferenceOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserPreferenceWhereUniqueInput
+  ): [UserPreference!]
   preferencesCount(where: UserPreferenceWhereInput! = {}): Int
-  myFests(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  myFests(
+    where: FestWhereInput! = {}
+    orderBy: [FestOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestWhereUniqueInput
+  ): [Fest!]
   myFestsCount(where: FestWhereInput! = {}): Int
-  festAttendees(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  festAttendees(
+    where: FestWhereInput! = {}
+    orderBy: [FestOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestWhereUniqueInput
+  ): [Fest!]
   festAttendeesCount(where: FestWhereInput! = {}): Int
-  festInvitees(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  festInvitees(
+    where: FestWhereInput! = {}
+    orderBy: [FestOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestWhereUniqueInput
+  ): [Fest!]
   festInviteesCount(where: FestWhereInput! = {}): Int
-  festVotes(where: FestVoteWhereInput! = {}, orderBy: [FestVoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestVoteWhereUniqueInput): [FestVote!]
+  festVotes(
+    where: FestVoteWhereInput! = {}
+    orderBy: [FestVoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestVoteWhereUniqueInput
+  ): [FestVote!]
   festVotesCount(where: FestVoteWhereInput! = {}): Int
-  festNotes(where: FestNoteWhereInput! = {}, orderBy: [FestNoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestNoteWhereUniqueInput): [FestNote!]
+  festNotes(
+    where: FestNoteWhereInput! = {}
+    orderBy: [FestNoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestNoteWhereUniqueInput
+  ): [FestNote!]
   festNotesCount(where: FestNoteWhereInput! = {}): Int
   createdAt: DateTime
   lastLoginDate: DateTime
@@ -963,7 +1205,10 @@ input PreferenceRelateToOneForCreateInput {
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
-scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+scalar JSON
+  @specifiedBy(
+    url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf"
+  )
 
 type Mutation {
   createFest(data: FestCreateInput!): Fest
@@ -974,25 +1219,37 @@ type Mutation {
   deleteFests(where: [FestWhereUniqueInput!]!): [Fest]
   createFestNote(data: FestNoteCreateInput!): FestNote
   createFestNotes(data: [FestNoteCreateInput!]!): [FestNote]
-  updateFestNote(where: FestNoteWhereUniqueInput!, data: FestNoteUpdateInput!): FestNote
+  updateFestNote(
+    where: FestNoteWhereUniqueInput!
+    data: FestNoteUpdateInput!
+  ): FestNote
   updateFestNotes(data: [FestNoteUpdateArgs!]!): [FestNote]
   deleteFestNote(where: FestNoteWhereUniqueInput!): FestNote
   deleteFestNotes(where: [FestNoteWhereUniqueInput!]!): [FestNote]
   createFestVote(data: FestVoteCreateInput!): FestVote
   createFestVotes(data: [FestVoteCreateInput!]!): [FestVote]
-  updateFestVote(where: FestVoteWhereUniqueInput!, data: FestVoteUpdateInput!): FestVote
+  updateFestVote(
+    where: FestVoteWhereUniqueInput!
+    data: FestVoteUpdateInput!
+  ): FestVote
   updateFestVotes(data: [FestVoteUpdateArgs!]!): [FestVote]
   deleteFestVote(where: FestVoteWhereUniqueInput!): FestVote
   deleteFestVotes(where: [FestVoteWhereUniqueInput!]!): [FestVote]
   createKeyword(data: KeywordCreateInput!): Keyword
   createKeywords(data: [KeywordCreateInput!]!): [Keyword]
-  updateKeyword(where: KeywordWhereUniqueInput!, data: KeywordUpdateInput!): Keyword
+  updateKeyword(
+    where: KeywordWhereUniqueInput!
+    data: KeywordUpdateInput!
+  ): Keyword
   updateKeywords(data: [KeywordUpdateArgs!]!): [Keyword]
   deleteKeyword(where: KeywordWhereUniqueInput!): Keyword
   deleteKeywords(where: [KeywordWhereUniqueInput!]!): [Keyword]
   createKeywordType(data: KeywordTypeCreateInput!): KeywordType
   createKeywordTypes(data: [KeywordTypeCreateInput!]!): [KeywordType]
-  updateKeywordType(where: KeywordTypeWhereUniqueInput!, data: KeywordTypeUpdateInput!): KeywordType
+  updateKeywordType(
+    where: KeywordTypeWhereUniqueInput!
+    data: KeywordTypeUpdateInput!
+  ): KeywordType
   updateKeywordTypes(data: [KeywordTypeUpdateArgs!]!): [KeywordType]
   deleteKeywordType(where: KeywordTypeWhereUniqueInput!): KeywordType
   deleteKeywordTypes(where: [KeywordTypeWhereUniqueInput!]!): [KeywordType]
@@ -1010,10 +1267,19 @@ type Mutation {
   deletePosts(where: [PostWhereUniqueInput!]!): [Post]
   createPreference(data: PreferenceCreateInput!): Preference
   createPreferences(data: [PreferenceCreateInput!]!): [Preference]
-  updatePreference(where: PreferenceWhereUniqueInput!, data: PreferenceUpdateInput!): Preference
+  updatePreference(
+    where: PreferenceWhereUniqueInput!
+    data: PreferenceUpdateInput!
+  ): Preference
   updatePreferences(data: [PreferenceUpdateArgs!]!): [Preference]
   deletePreference(where: PreferenceWhereUniqueInput!): Preference
   deletePreferences(where: [PreferenceWhereUniqueInput!]!): [Preference]
+  createSound(data: SoundCreateInput!): Sound
+  createSounds(data: [SoundCreateInput!]!): [Sound]
+  updateSound(where: SoundWhereUniqueInput!, data: SoundUpdateInput!): Sound
+  updateSounds(data: [SoundUpdateArgs!]!): [Sound]
+  deleteSound(where: SoundWhereUniqueInput!): Sound
+  deleteSounds(where: [SoundWhereUniqueInput!]!): [Sound]
   createUser(data: UserCreateInput!): User
   createUsers(data: [UserCreateInput!]!): [User]
   updateUser(where: UserWhereUniqueInput!, data: UserUpdateInput!): User
@@ -1022,16 +1288,28 @@ type Mutation {
   deleteUsers(where: [UserWhereUniqueInput!]!): [User]
   createUserPreference(data: UserPreferenceCreateInput!): UserPreference
   createUserPreferences(data: [UserPreferenceCreateInput!]!): [UserPreference]
-  updateUserPreference(where: UserPreferenceWhereUniqueInput!, data: UserPreferenceUpdateInput!): UserPreference
+  updateUserPreference(
+    where: UserPreferenceWhereUniqueInput!
+    data: UserPreferenceUpdateInput!
+  ): UserPreference
   updateUserPreferences(data: [UserPreferenceUpdateArgs!]!): [UserPreference]
   deleteUserPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
-  deleteUserPreferences(where: [UserPreferenceWhereUniqueInput!]!): [UserPreference]
+  deleteUserPreferences(
+    where: [UserPreferenceWhereUniqueInput!]!
+  ): [UserPreference]
   endSession: Boolean!
-  authenticateUserWithPassword(username: String!, password: String!): UserAuthenticationWithPasswordResult
-  createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
+  authenticateUserWithPassword(
+    username: String!
+    password: String!
+  ): UserAuthenticationWithPasswordResult
+  createInitialUser(
+    data: CreateInitialUserInput!
+  ): UserAuthenticationWithPasswordSuccess!
 }
 
-union UserAuthenticationWithPasswordResult = UserAuthenticationWithPasswordSuccess | UserAuthenticationWithPasswordFailure
+union UserAuthenticationWithPasswordResult =
+    UserAuthenticationWithPasswordSuccess
+  | UserAuthenticationWithPasswordFailure
 
 type UserAuthenticationWithPasswordSuccess {
   sessionToken: String!
@@ -1050,34 +1328,103 @@ input CreateInitialUserInput {
 }
 
 type Query {
-  fests(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
+  fests(
+    where: FestWhereInput! = {}
+    orderBy: [FestOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestWhereUniqueInput
+  ): [Fest!]
   fest(where: FestWhereUniqueInput!): Fest
   festsCount(where: FestWhereInput! = {}): Int
-  festNotes(where: FestNoteWhereInput! = {}, orderBy: [FestNoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestNoteWhereUniqueInput): [FestNote!]
+  festNotes(
+    where: FestNoteWhereInput! = {}
+    orderBy: [FestNoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestNoteWhereUniqueInput
+  ): [FestNote!]
   festNote(where: FestNoteWhereUniqueInput!): FestNote
   festNotesCount(where: FestNoteWhereInput! = {}): Int
-  festVotes(where: FestVoteWhereInput! = {}, orderBy: [FestVoteOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestVoteWhereUniqueInput): [FestVote!]
+  festVotes(
+    where: FestVoteWhereInput! = {}
+    orderBy: [FestVoteOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: FestVoteWhereUniqueInput
+  ): [FestVote!]
   festVote(where: FestVoteWhereUniqueInput!): FestVote
   festVotesCount(where: FestVoteWhereInput! = {}): Int
-  keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
+  keywords(
+    where: KeywordWhereInput! = {}
+    orderBy: [KeywordOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: KeywordWhereUniqueInput
+  ): [Keyword!]
   keyword(where: KeywordWhereUniqueInput!): Keyword
   keywordsCount(where: KeywordWhereInput! = {}): Int
-  keywordTypes(where: KeywordTypeWhereInput! = {}, orderBy: [KeywordTypeOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordTypeWhereUniqueInput): [KeywordType!]
+  keywordTypes(
+    where: KeywordTypeWhereInput! = {}
+    orderBy: [KeywordTypeOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: KeywordTypeWhereUniqueInput
+  ): [KeywordType!]
   keywordType(where: KeywordTypeWhereUniqueInput!): KeywordType
   keywordTypesCount(where: KeywordTypeWhereInput! = {}): Int
-  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  movies(
+    where: MovieWhereInput! = {}
+    orderBy: [MovieOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: MovieWhereUniqueInput
+  ): [Movie!]
   movie(where: MovieWhereUniqueInput!): Movie
   moviesCount(where: MovieWhereInput! = {}): Int
-  posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: PostWhereUniqueInput
+  ): [Post!]
   post(where: PostWhereUniqueInput!): Post
   postsCount(where: PostWhereInput! = {}): Int
-  preferences(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
+  preferences(
+    where: PreferenceWhereInput! = {}
+    orderBy: [PreferenceOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: PreferenceWhereUniqueInput
+  ): [Preference!]
   preference(where: PreferenceWhereUniqueInput!): Preference
   preferencesCount(where: PreferenceWhereInput! = {}): Int
-  users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
+  sounds(
+    where: SoundWhereInput! = {}
+    orderBy: [SoundOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: SoundWhereUniqueInput
+  ): [Sound!]
+  sound(where: SoundWhereUniqueInput!): Sound
+  soundsCount(where: SoundWhereInput! = {}): Int
+  users(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserWhereUniqueInput
+  ): [User!]
   user(where: UserWhereUniqueInput!): User
   usersCount(where: UserWhereInput! = {}): Int
-  userPreferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
+  userPreferences(
+    where: UserPreferenceWhereInput! = {}
+    orderBy: [UserPreferenceOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+    cursor: UserPreferenceWhereUniqueInput
+  ): [UserPreference!]
   userPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
   userPreferencesCount(where: UserPreferenceWhereInput! = {}): Int
   keystone: KeystoneMeta!
