@@ -86,6 +86,7 @@ model Movie {
   howToWatch          String     @default("")
   handicap            Int?       @default(0)
   posts               Post[]     @relation("Movie_posts")
+  sounds              Sound[]    @relation("Movie_sounds")
   keywords            Keyword[]  @relation("Keyword_movies")
   status              String?    @default("draft")
   from_Fest_movies    Fest[]     @relation("Fest_movies")
@@ -121,6 +122,18 @@ model Preference {
   name           String             @default("")
   type           PreferenceTypeType @default(radio)
   userPreference UserPreference[]   @relation("UserPreference_preference")
+}
+
+model Sound {
+  id              String  @id @default(uuid())
+  title           String  @default("")
+  photo_filesize  Int?
+  photo_extension String?
+  photo_width     Int?
+  photo_height    Int?
+  photo_id        String?
+  movies          Movie[] @relation("Movie_sounds")
+  audio           String  @default("")
 }
 
 model User {
