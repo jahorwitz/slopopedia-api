@@ -777,13 +777,7 @@ type Sound {
   photo: ImageFieldOutput
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
-  audio: FileFieldOutput
-}
-
-type FileFieldOutput {
-  filename: String!
-  filesize: Int!
-  url: String!
+  audio: String
 }
 
 input SoundWhereUniqueInput {
@@ -797,22 +791,20 @@ input SoundWhereInput {
   id: IDFilter
   title: StringFilter
   movies: MovieManyRelationFilter
+  audio: StringFilter
 }
 
 input SoundOrderByInput {
   id: OrderDirection
   title: OrderDirection
+  audio: OrderDirection
 }
 
 input SoundUpdateInput {
   title: String
   photo: ImageFieldInput
   movies: MovieRelateToManyForUpdateInput
-  audio: FileFieldInput
-}
-
-input FileFieldInput {
-  upload: Upload!
+  audio: String
 }
 
 input SoundUpdateArgs {
@@ -824,7 +816,7 @@ input SoundCreateInput {
   title: String
   photo: ImageFieldInput
   movies: MovieRelateToManyForCreateInput
-  audio: FileFieldInput
+  audio: String
 }
 
 type User {

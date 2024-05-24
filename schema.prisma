@@ -133,8 +133,7 @@ model Sound {
   photo_height    Int?
   photo_id        String?
   movies          Movie[] @relation("Movie_sounds")
-  audio_filesize  Int?
-  audio_filename  String?
+  audio           String  @default("")
 }
 
 model User {

@@ -7,8 +7,7 @@ CREATE TABLE `Sound` (
     `photo_width` INTEGER NULL,
     `photo_height` INTEGER NULL,
     `photo_id` VARCHAR(191) NULL,
-    `audio_filesize` INTEGER NULL,
-    `audio_filename` VARCHAR(191) NULL,
+    `audio` VARCHAR(191) NOT NULL DEFAULT '',
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
