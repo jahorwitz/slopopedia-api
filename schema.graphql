@@ -333,6 +333,7 @@ input FestVoteCreateInput {
 type Keyword {
   id: ID!
   name: String
+  handicap: Int
   keywordType: KeywordType
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
@@ -350,9 +351,21 @@ input KeywordWhereInput {
   NOT: [KeywordWhereInput!]
   id: IDFilter
   name: StringFilter
+  handicap: IntNullableFilter
   keywordType: KeywordTypeWhereInput
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
 }
 
 input PostManyRelationFilter {
@@ -364,10 +377,12 @@ input PostManyRelationFilter {
 input KeywordOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  handicap: OrderDirection
 }
 
 input KeywordUpdateInput {
   name: String
+  handicap: Int
   keywordType: KeywordTypeRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
@@ -393,6 +408,7 @@ input KeywordUpdateArgs {
 
 input KeywordCreateInput {
   name: String
+  handicap: Int
   keywordType: KeywordTypeRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
@@ -479,6 +495,8 @@ type Movie {
   handicap: Int
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
+  sounds(where: SoundWhereInput! = {}, orderBy: [SoundOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SoundWhereUniqueInput): [Sound!]
+  soundsCount(where: SoundWhereInput! = {}): Int
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
   status: String
@@ -518,19 +536,15 @@ input MovieWhereInput {
   howToWatch: StringFilter
   handicap: IntNullableFilter
   posts: PostManyRelationFilter
+  sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
 }
 
-input IntNullableFilter {
-  equals: Int
-  in: [Int!]
-  notIn: [Int!]
-  lt: Int
-  lte: Int
-  gt: Int
-  gte: Int
-  not: IntNullableFilter
+input SoundManyRelationFilter {
+  every: SoundWhereInput
+  some: SoundWhereInput
+  none: SoundWhereInput
 }
 
 input StringNullableFilter {
@@ -570,6 +584,7 @@ input MovieUpdateInput {
   howToWatch: String
   handicap: Int
   posts: PostRelateToManyForUpdateInput
+  sounds: SoundRelateToManyForUpdateInput
   keywords: KeywordRelateToManyForUpdateInput
   status: String
 }
@@ -580,6 +595,13 @@ input ImageFieldInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+input SoundRelateToManyForUpdateInput {
+  disconnect: [SoundWhereUniqueInput!]
+  set: [SoundWhereUniqueInput!]
+  create: [SoundCreateInput!]
+  connect: [SoundWhereUniqueInput!]
+}
 
 input MovieUpdateArgs {
   where: MovieWhereUniqueInput!
@@ -597,8 +619,14 @@ input MovieCreateInput {
   howToWatch: String
   handicap: Int
   posts: PostRelateToManyForCreateInput
+  sounds: SoundRelateToManyForCreateInput
   keywords: KeywordRelateToManyForCreateInput
   status: String
+}
+
+input SoundRelateToManyForCreateInput {
+  create: [SoundCreateInput!]
+  connect: [SoundWhereUniqueInput!]
 }
 
 type Post {
@@ -746,6 +774,54 @@ input PreferenceCreateInput {
 input UserPreferenceRelateToManyForCreateInput {
   create: [UserPreferenceCreateInput!]
   connect: [UserPreferenceWhereUniqueInput!]
+}
+
+type Sound {
+  id: ID!
+  title: String
+  photo: ImageFieldOutput
+  movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
+  moviesCount(where: MovieWhereInput! = {}): Int
+  audio: String
+}
+
+input SoundWhereUniqueInput {
+  id: ID
+}
+
+input SoundWhereInput {
+  AND: [SoundWhereInput!]
+  OR: [SoundWhereInput!]
+  NOT: [SoundWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  movies: MovieManyRelationFilter
+  audio: StringFilter
+}
+
+input SoundOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  audio: OrderDirection
+}
+
+input SoundUpdateInput {
+  title: String
+  photo: ImageFieldInput
+  movies: MovieRelateToManyForUpdateInput
+  audio: String
+}
+
+input SoundUpdateArgs {
+  where: SoundWhereUniqueInput!
+  data: SoundUpdateInput!
+}
+
+input SoundCreateInput {
+  title: String
+  photo: ImageFieldInput
+  movies: MovieRelateToManyForCreateInput
+  audio: String
 }
 
 type User {
@@ -1009,6 +1085,12 @@ type Mutation {
   updatePreferences(data: [PreferenceUpdateArgs!]!): [Preference]
   deletePreference(where: PreferenceWhereUniqueInput!): Preference
   deletePreferences(where: [PreferenceWhereUniqueInput!]!): [Preference]
+  createSound(data: SoundCreateInput!): Sound
+  createSounds(data: [SoundCreateInput!]!): [Sound]
+  updateSound(where: SoundWhereUniqueInput!, data: SoundUpdateInput!): Sound
+  updateSounds(data: [SoundUpdateArgs!]!): [Sound]
+  deleteSound(where: SoundWhereUniqueInput!): Sound
+  deleteSounds(where: [SoundWhereUniqueInput!]!): [Sound]
   createUser(data: UserCreateInput!): User
   createUsers(data: [UserCreateInput!]!): [User]
   updateUser(where: UserWhereUniqueInput!, data: UserUpdateInput!): User
@@ -1069,6 +1151,9 @@ type Query {
   preferences(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
   preference(where: PreferenceWhereUniqueInput!): Preference
   preferencesCount(where: PreferenceWhereInput! = {}): Int
+  sounds(where: SoundWhereInput! = {}, orderBy: [SoundOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SoundWhereUniqueInput): [Sound!]
+  sound(where: SoundWhereUniqueInput!): Sound
+  soundsCount(where: SoundWhereInput! = {}): Int
   users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   user(where: UserWhereUniqueInput!): User
   usersCount(where: UserWhereInput! = {}): Int

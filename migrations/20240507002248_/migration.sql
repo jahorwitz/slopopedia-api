@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `keyword` ADD COLUMN `keywordType` VARCHAR(191) NULL;
+ALTER TABLE `Keyword` ADD COLUMN `keywordType` VARCHAR(191) NULL;
 
 -- CreateTable
 CREATE TABLE `KeywordType` (

@@ -4,17 +4,11 @@ import { text, calendarDay, relationship } from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
 
 export const Fest: ListConfig<Lists.Fest.TypeInfo<any>, any> = list({
-  // Any active user can create/update/delete fests, but only the owner of a fest (or an admin) can update/delete a given fest
+  // Any active user can create/update fests, but only the owner of a fest (or an admin) can delete a given fest
   access: {
     item: {
       create: ({ session }) => session?.data.status === "active",
-      update: async ({ session, item }) => {
-        // if the owner of this fest is the same as the logged in user OR the logged in user is an admin, allow the operation
-        return (
-          (!!session?.data.id && session.data.id === item.creatorId) ||
-          !!session?.data.isAdmin
-        );
-      },
+      update: ({ session }) => session?.data.status === "active",
       delete: async ({ session, item }) => {
         // if the owner of this fest is the same as the logged in user OR the logged in user is an admin, allow the operation
         return (
