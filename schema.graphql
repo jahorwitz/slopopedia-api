@@ -333,6 +333,7 @@ input FestVoteCreateInput {
 type Keyword {
   id: ID!
   name: String
+  handicap: Int
   keywordType: KeywordType
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
@@ -350,9 +351,21 @@ input KeywordWhereInput {
   NOT: [KeywordWhereInput!]
   id: IDFilter
   name: StringFilter
+  handicap: IntNullableFilter
   keywordType: KeywordTypeWhereInput
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
 }
 
 input PostManyRelationFilter {
@@ -364,10 +377,12 @@ input PostManyRelationFilter {
 input KeywordOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  handicap: OrderDirection
 }
 
 input KeywordUpdateInput {
   name: String
+  handicap: Int
   keywordType: KeywordTypeRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
@@ -393,6 +408,7 @@ input KeywordUpdateArgs {
 
 input KeywordCreateInput {
   name: String
+  handicap: Int
   keywordType: KeywordTypeRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
@@ -523,17 +539,6 @@ input MovieWhereInput {
   sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
-}
-
-input IntNullableFilter {
-  equals: Int
-  in: [Int!]
-  notIn: [Int!]
-  lt: Int
-  lte: Int
-  gt: Int
-  gte: Int
-  not: IntNullableFilter
 }
 
 input SoundManyRelationFilter {
