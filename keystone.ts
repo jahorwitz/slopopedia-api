@@ -111,6 +111,16 @@ export default withAuth(
         forcePathStyle: true,
         //endpoint: do i need this?
       },
+      my_S3_sounds: {
+        kind: "s3",
+        type: "file",
+        bucketName: process.env.S3_BUCKET_NAME || "keystone-test",
+        region: process.env.S3_REGION || "us-east-1",
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || "keystone",
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "keystone",
+        signed: { expiry: 5000 },
+        forcePathStyle: true,
+      },
     },
     lists: Models,
     session,

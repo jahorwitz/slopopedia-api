@@ -68,12 +68,14 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
     handicap: integer({ defaultValue: 0 }),
 
     posts: relationship({ ref: "Post.movies", many: true }),
+    sounds: relationship({ ref: "Sound.movies", many: true }),
     keywords: relationship({ ref: "Keyword.movies", many: true }),
     status: select({
       options: [
         { label: "Published", value: "published" },
         { label: "Draft", value: "draft" },
       ],
+      defaultValue: "draft",
     }),
   },
 });
