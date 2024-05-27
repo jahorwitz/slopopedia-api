@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { TypeInfo, Context } from ".keystone/types";
+import { uploadFile } from "./s3"; //do I need this?
 dotenv.config();
 //import { lists } from './schema';
 import * as Models from "./models";
@@ -17,15 +18,70 @@ export default withAuth(
         ],
       },
       maxFileSize: 200 * 1024 * 1024,
-      //extendExpressApp: async (app, commonContext) => { /* ... */ },
-      extendHttpServer: async (httpServer, commonContext) => {
-        /* ... */
+      extendExpressApp: (app, context) => {
+        // this example HTTP GET handler retrieves any posts in
+        //  the database for your context
+        //   with an optional request query parameter of `draft=1`
+        //   returning them as JSON
+        //
+        // e.g
+        //   http://localhost:3000/rest/posts
+        //   http://localhost:3000/rest/posts?draft=1
+        //
+        app.post("/api/movie", async (req, res) => {
+          //const context = await commonContext.withRequest(req, res);
+          //if (!context.session) return res.status(401).end()
+          console.log(req);
+          //const isDraft = req.query?.draft === "1";
+          const tasks = await context.query.Movie.createOne(
+            //gets us access to graphql
+            {
+              data: {
+                author: {},
+                title: "",
+                description: "",
+                releaseYear: null,
+                runtime: null,
+                photo: null,
+                tomatoScore: null,
+                howToWatch: "",
+                handicap: null,
+                keywords: {},
+              },
+            },
+          );
+
+          res.json(tasks);
+        });
       },
-      extendExpressApp: (app, commonContext) => {
-        app.get("/api/users", async (req, res) => {
+
+      extendHttpServer: (server, commonContext) => {
+        // e.g
+        //   http://localhost:3000/rest/posts/clu7x6ch90002a89s6l63bjb5
+        //
+        server.on("request", async (req, res) => {
+          if (!req.url?.startsWith("/api/movie")) return;
+
+          // this example HTTP GET handler retrieves a post in the database for your context
+          //   returning it as JSON
           const context = await commonContext.withRequest(req, res);
-          const users = await context.query.User.findMany();
-          res.json(users);
+          // if (!context.session) return res.status(401).end()
+
+          const task = await context.query.Movie.createOne({
+            where: {
+              id: req.url.slice("/api/movie".length),
+            },
+            //example only - will update for movie
+            query: `
+              id
+              title
+              content
+              draft
+            `,
+          });
+
+          if (!task) return res.writeHead(404).end();
+          res.writeHead(200).end(JSON.stringify(task));
         });
       },
     },
@@ -53,7 +109,7 @@ export default withAuth(
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "keystone",
         signed: { expiry: 5000 },
         forcePathStyle: true,
-        //endpoint: 'www.endpointgoeshere.com' //do i need this?
+        //endpoint: do i need this?
       },
     },
     lists: Models,
