@@ -1,11 +1,14 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { TypeInfo, Context } from ".keystone/types";
-import { uploadFile } from "./s3"; //do I need this?
+import { uploadFile } from "./s3";
+import { main } from "./s3-large-upload";
+const fileUpload = require("express-fileupload");
 dotenv.config();
 //import { lists } from './schema';
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
+const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 export default withAuth(
   config<TypeInfo>({
@@ -19,71 +22,80 @@ export default withAuth(
       },
       maxFileSize: 200 * 1024 * 1024,
       extendExpressApp: (app, context) => {
-        // this example HTTP GET handler retrieves any posts in
-        //  the database for your context
-        //   with an optional request query parameter of `draft=1`
-        //   returning them as JSON
-        //
-        // e.g
-        //   http://localhost:3000/rest/posts
-        //   http://localhost:3000/rest/posts?draft=1
-        //
+        app.use(fileUpload());
         app.post("/api/movie", async (req, res) => {
+          const userId = req.body.userId;
+          const movieTitle = req.body.movieTitle;
+          const movieImage = req.body.movieImage;
+          const fileData = {
+            movieTitle: req.body.movieTitle,
+            movieImage: req.body.movieImage,
+          };
+          console.log({ fileData });
+
+          const s3upload = await uploadFile();
+          console.log(s3upload, "hello s3upload");
+          //req.body.formData look this up
+          //pass that into upload file call
+          console.log(req.body, "hello keystone line 31");
+
+          //after calling upload file we call graphQL to insert movie into db
+          //find keystone examples
+
           //const context = await commonContext.withRequest(req, res);
           //if (!context.session) return res.status(401).end()
-          console.log(req);
           //const isDraft = req.query?.draft === "1";
-          const tasks = await context.query.Movie.createOne(
-            //gets us access to graphql
-            {
-              data: {
-                author: {},
-                title: "",
-                description: "",
-                releaseYear: null,
-                runtime: null,
-                photo: null,
-                tomatoScore: null,
-                howToWatch: "",
-                handicap: null,
-                keywords: {},
-              },
-            },
-          );
+          // const tasks = await context.query.Movie.createOne(
+          //   //gets us access to graphql
+          //   {
+          //     data: {
+          //       author: {},
+          //       title: "",
+          //       description: "",
+          //       releaseYear: null,
+          //       runtime: null,
+          //       photo: null,
+          //       tomatoScore: null,
+          //       howToWatch: "",
+          //       handicap: null,
+          //       keywords: {},
+          //     },
+          //   },
+          // );
 
-          res.json(tasks);
+          res.json({ success: true });
         });
       },
 
-      extendHttpServer: (server, commonContext) => {
-        // e.g
-        //   http://localhost:3000/rest/posts/clu7x6ch90002a89s6l63bjb5
-        //
-        server.on("request", async (req, res) => {
-          if (!req.url?.startsWith("/api/movie")) return;
+      // extendHttpServer: (server, commonContext) => {
+      //   // e.g
+      //   //   http://localhost:3000/rest/posts/clu7x6ch90002a89s6l63bjb5
+      //   //
+      //   server.on("request", async (req, res) => {
+      //     if (!req.url?.startsWith("/api/movie")) return;
 
-          // this example HTTP GET handler retrieves a post in the database for your context
-          //   returning it as JSON
-          const context = await commonContext.withRequest(req, res);
-          // if (!context.session) return res.status(401).end()
+      //     // this example HTTP GET handler retrieves a post in the database for your context
+      //     //   returning it as JSON
+      //     const context = await commonContext.withRequest(req, res);
+      //     // if (!context.session) return res.status(401).end()
 
-          const task = await context.query.Movie.createOne({
-            where: {
-              id: req.url.slice("/api/movie".length),
-            },
-            //example only - will update for movie
-            query: `
-              id
-              title
-              content
-              draft
-            `,
-          });
+      //     const task = await context.query.Movie.createOne({
+      //       where: {
+      //         id: req.url.slice("/api/movie".length),
+      //       },
+      //       //example only - will update for movie
+      //       query: `
+      //         id
+      //         title
+      //         content
+      //         draft
+      //       `,
+      //     });
 
-          if (!task) return res.writeHead(404).end();
-          res.writeHead(200).end(JSON.stringify(task));
-        });
-      },
+      //     if (!task) return res.writeHead(404).end();
+      //     res.writeHead(200).end(JSON.stringify(task));
+      //   });
+      // },
     },
     db: {
       provider: "mysql",

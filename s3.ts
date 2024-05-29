@@ -1,38 +1,70 @@
 require("dotenv").config();
 const fs = require("fs");
+const fileUpload = require("express-fileupload");
 const {
   S3Client,
-  //PutObjectCommand,
-  //CreateBucketCommand,
+  PutObjectCommand,
   //DeleteObjectCommand,
-  //DeleteBucketCommand,
-  //paginateListObjectsV2,
   //GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const S3_REGION = process.env.S3_REGION;
-const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY;
+const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID;
 const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY;
 
-const S3 = new S3Client({
-  S3_REGION,
-  S3_ACCESS_KEY,
-  S3_SECRET_ACCESS_KEY,
+const s3 = new S3Client({
+  region: S3_REGION,
+  credentials: {
+    accessKeyId: S3_ACCESS_KEY_ID,
+    secretAccessKey: S3_SECRET_ACCESS_KEY,
+  },
 });
 
 //upload file to s3
-export const uploadFile = (image: { path: any }) => {
-  const fileStream = fs.createReadStream(image.path);
-  //file path coming from multer
+export const uploadFile = async (data?: {}) => {
+  //export const uploadFile = async (image?: { path: any },) => {
+  //const fileContent = fs.readFileSync(data);
+  //console.log(fileContent, "hello fileContent")
 
-  const uploadParams = {
-    Bucket: S3_BUCKET_NAME,
-    Body: fileStream,
-    Key: image.path.name, //this is filename multer would create
-  };
-  return S3.upload(uploadParams).promise();
+  console.log(data, "s3 hello");
+  //accept parameter that includes user submited formdata
+  //look into body containing image instead
+
+  // Put an object into an Amazon S3 bucket.
+  const s3Upload = await s3.send(
+    new PutObjectCommand({
+      Bucket: S3_BUCKET_NAME,
+      Key: "my-first-object.txt", //needs to be userId-movieName-timeStamp.txt
+      Body: "body text",
+      //Body: Buffer.from(fileContent), //needs to eventually be the movie image
+    }),
+  );
+
+  return s3Upload;
 };
+
+// export const uploadFile = async (fileData, bucketName) => {
+//   const fileContent = fs.readFileSync(fileData);
+//    console.log(fileData, fileContent, bucketName, "s3 hello")
+
+//   const params = {
+//     Bucket: bucketName,
+//     Key: fileData.movieName,
+//     Body: fileContent,
+//   };
+
+//   s3.upload(params, (err, data) => {
+//     if (err) {
+//       console.error('Error uploading file:', err);
+//     } else {
+//       console.log(`File uploaded successfully. ${data.Location}`);
+//     }
+//   });
+// };
+
+//Usage
+//uploadFile('test.jpeg', S3_BUCKET_NAME);
 
 //function to download file from s3 needs added
 
