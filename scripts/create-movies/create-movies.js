@@ -122,46 +122,8 @@ async function movieExists(title, sessionToken) {
   });
 
   /* -------------------------- handle keyword types -------------------------- */
-  // const kwTypesFile = readFileSync("./scripts/KWTypes.csv", "utf8");
-  // const [, ...kwTypesLines] = kwTypesFile.split("\n");
 
-  // const allKwTypes = [];
-
-  // for (const line of kwTypesLines) {
-  //   const [kwTypesString] = line.split(`,`);
-  //   if (!kwTypesString) continue;
-  //   allKwTypes.push(kwTypesString);
-  // }
-
-  // const {
-  //   data: {
-  //     data: { createKeywordTypes: createdKWTypes },
-  //   },
-  // } = await axios.post(
-  //   "http://127.0.0.1:8080/api/graphql",
-  //   {
-  //     query: `
-  //     mutation CreateKeywordTypes($data: [KeywordTypeCreateInput!]!) {
-  //       createKeywordTypes(data: $data) {
-  //           id
-  //           name
-  //       }
-  //     }
-  //     `,
-  //     variables: {
-  //       data: allKwTypes.map((kwType) => {
-  //         return { name: kwType };
-  //       }),
-  //     },
-  //   },
-  //   {
-  //     headers: {
-  //       Cookie: `keystonejs-session=${sessionToken}`,
-  //     },
-  //   }
-  // );
-
-  const processKeywordTypesCSV = () => {
+  const seedKeywordTypesFromKWTypesCSV = () => {
     return new Promise((resolve, reject) => {
       const keywordTypePromises = [];
       createReadStream("./scripts/KWTypes.csv")
@@ -172,6 +134,7 @@ async function movieExists(title, sessionToken) {
               console.log(
                 `KeywordType "${keywordType["Display"]}" already exists.`
               );
+              // no need to update the kwType
               return;
             }
             // create kwType
@@ -222,8 +185,94 @@ async function movieExists(title, sessionToken) {
     });
   };
 
+  const seedKeywordTypesFromKeywordsCSV = () => {
+    return new Promise((resolve, reject) => {
+      const keywordTypePromises = [];
+      createReadStream("./scripts/create-movies/Keywords.csv")
+        .pipe(csv())
+        .on("data", async (keyword) => {
+          const promise = (async () => {
+            if (await kwTypeExists(keyword["KWType"], sessionToken)) {
+              console.log(`KeywordType "${keyword["KWType"]}" already exists.`);
+              // no need to update the kwType
+              return;
+            }
+            // create kwType
+            return await axios.post(
+              "http://127.0.0.1:8080/api/graphql",
+              {
+                query: `
+              mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
+                createKeywordType(data: $data) {
+                      id
+                      name
+                  }
+              }
+              `,
+                variables: {
+                  data: {
+                    name: keyword["KWType"],
+                  },
+                },
+              },
+              {
+                headers: {
+                  Cookie: `keystonejs-session=${sessionToken}`,
+                },
+              }
+            );
+          })();
+
+          keywordTypePromises.push(promise);
+        })
+        .on("end", async () => {
+          try {
+            const keywordTypeResults = await Promise.all(keywordTypePromises);
+            //console.log({ keywordTypePromises, keywordTypeResults });
+            const createdKeywordTypes = keywordTypeResults.map(
+              (result) => result?.data?.data?.createKeywordType
+            );
+            console.log(
+              `Successfully created ${createdKeywordTypes.length} keywords!`
+            );
+            //console.log({ createdKeywordTypes });
+            resolve(createdKeywordTypes);
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .on("error", (error) => reject(error));
+    });
+  };
+
   /* ----------------------------- handle keywords ---------------------------- */
-  const processKeywordsCSV = (createdKwTypes) => {
+  const seedKeywordsFromKeywordsCSV = async () => {
+    // query to get all kwTypes from the database
+    const {
+      data: {
+        data: { keywordTypes: allKwTypes },
+      },
+    } = await axios.post(
+      "http://127.0.0.1:8080/api/graphql",
+      {
+        query: `
+        query GetKeywordTypes {
+          keywordTypes {
+            name
+            id
+          }
+        }
+      `,
+      },
+      {
+        headers: {
+          Cookie: `keystonejs-session=${sessionToken}`,
+        },
+      }
+    );
+
+    console.log("allKwTypes", allKwTypes);
+
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
       createReadStream("./scripts/create-movies/Keywords.csv")
@@ -232,15 +281,48 @@ async function movieExists(title, sessionToken) {
           const promise = (async () => {
             if (await keywordExists(keyword["Keyword"], sessionToken)) {
               console.log(`Keyword "${keyword["Keyword"]}" already exists.`);
-              return;
+              // each keyword only has one keyword type, so we only need to find one kwType Id
+              const kwTypeId = allKwTypes.find(
+                (createdKwType) => keyword["KWType"] === createdKwType.name
+              ).id;
+              // update the keyword with the handicap and the kwType
+              return await axios.post(
+                "http://127.0.0.1:8080/api/graphql",
+                {
+                  query: `
+                mutation UpdateKeyword($where: KeywordWhereUniqueInput!, $data: KeywordUpdateInput!) {
+                  updateKeyword(where: $where, data: $data) {
+                        id
+                        name
+                    }
+                }
+                `,
+                  variables: {
+                    where: { id: "need the keyword id" }, //!!!!
+                    data: {
+                      keywordType: {
+                        connect: {
+                          id: kwTypeId,
+                        },
+                      },
+                      handicap: parseInt(keyword["Handicap"]),
+                    },
+                  },
+                },
+                {
+                  headers: {
+                    Cookie: `keystonejs-session=${sessionToken}`,
+                  },
+                }
+              );
             }
-            // so, current problem is that createdKwTypes is undefined, if we run this script and no new kwTypes are created
-            console.log({ createdKwTypes });
+
             // each keyword only has one keyword type, so we only need to find one kwType Id
-            const kwTypeId = createdKwTypes.find(
+            const kwTypeId = allKwTypes.find(
               (createdKwType) => keyword["KWType"] === createdKwType.name
             ).id;
 
+            // create a new keyword
             return await axios.post(
               "http://127.0.0.1:8080/api/graphql",
               {
@@ -260,8 +342,7 @@ async function movieExists(title, sessionToken) {
                         id: kwTypeId,
                       },
                     },
-                    // do i need to convert a string to an int?
-                    handicap: keyword["Handicap"],
+                    handicap: parseInt(keyword["Handicap"]),
                   },
                 },
               },
@@ -278,15 +359,14 @@ async function movieExists(title, sessionToken) {
         .on("end", async () => {
           try {
             const keywordResults = await Promise.all(keywordPromises);
-            //console.log({ keywordPromises, keywordResults });
-            const createdKeywords = keywordResults.map(
-              (result) => result.data.data.createKeyword
-            );
+            // console.log({ keywordPromises, keywordResults });
+            // const createdKeywords = keywordResults.map(
+            //   (result) => result.data.data.createKeyword
+            // );
             console.log(
-              `Successfully created ${createdKeywords.length} keywords!`
+              `Successfully created/updated ${keywordPromises.length} keywords!`
             );
-            console.log({ createdKeywords });
-            resolve(createdKeywords);
+            resolve();
           } catch (error) {
             reject(error);
           }
@@ -371,9 +451,10 @@ async function movieExists(title, sessionToken) {
   };
 
   try {
-    const createdKwTypes = await processKeywordTypesCSV();
-    const createdKeywords = await processKeywordsCSV(createdKwTypes);
-    await processMoviesCSV(createdKeywords);
+    await seedKeywordTypesFromKWTypesCSV();
+    await seedKeywordTypesFromKeywordsCSV();
+    await seedKeywordsFromKeywordsCSV();
+    //await processMoviesCSV();
   } catch (error) {
     console.error("Error processing CSV files:", error);
   }
