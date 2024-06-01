@@ -48,6 +48,10 @@ async function keywordExists(keyword, sessionToken) {
           keywords(where: { name: $name }) {
             id
             name
+            keywordType {
+              name
+            }
+            handicap
           }
         }
       `,
@@ -247,32 +251,6 @@ async function movieExists(title, sessionToken) {
 
   /* ----------------------------- handle keywords ---------------------------- */
   const seedKeywordsFromKeywordsCSV = async () => {
-    // query to get all kwTypes from the database
-    const {
-      data: {
-        data: { keywordTypes: allKwTypes },
-      },
-    } = await axios.post(
-      "http://127.0.0.1:8080/api/graphql",
-      {
-        query: `
-        query GetKeywordTypes {
-          keywordTypes {
-            name
-            id
-          }
-        }
-      `,
-      },
-      {
-        headers: {
-          Cookie: `keystonejs-session=${sessionToken}`,
-        },
-      }
-    );
-
-    console.log("allKwTypes", allKwTypes);
-
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
       createReadStream("./scripts/create-movies/Keywords.csv")
@@ -280,12 +258,11 @@ async function movieExists(title, sessionToken) {
         .on("data", async (keyword) => {
           const promise = (async () => {
             if (await keywordExists(keyword["Keyword"], sessionToken)) {
-              console.log(`Keyword "${keyword["Keyword"]}" already exists.`);
-              // each keyword only has one keyword type, so we only need to find one kwType Id
-              const kwTypeId = allKwTypes.find(
-                (createdKwType) => keyword["KWType"] === createdKwType.name
-              ).id;
-              // update the keyword with the handicap and the kwType
+              console.log(
+                `Keyword "${keyword["Keyword"]}" already exists. Updating...`
+              );
+
+              // update the keyword with its handicap and kwType
               return await axios.post(
                 "http://127.0.0.1:8080/api/graphql",
                 {
@@ -298,11 +275,11 @@ async function movieExists(title, sessionToken) {
                 }
                 `,
                   variables: {
-                    where: { id: "need the keyword id" }, //!!!!
+                    where: { name: keyword["Keyword"] },
                     data: {
                       keywordType: {
                         connect: {
-                          id: kwTypeId,
+                          name: keyword["KWType"],
                         },
                       },
                       handicap: parseInt(keyword["Handicap"]),
@@ -317,12 +294,8 @@ async function movieExists(title, sessionToken) {
               );
             }
 
-            // each keyword only has one keyword type, so we only need to find one kwType Id
-            const kwTypeId = allKwTypes.find(
-              (createdKwType) => keyword["KWType"] === createdKwType.name
-            ).id;
-
             // create a new keyword
+            console.log(`Creating keyword "${keyword["Keyword"]}".`);
             return await axios.post(
               "http://127.0.0.1:8080/api/graphql",
               {
@@ -339,7 +312,7 @@ async function movieExists(title, sessionToken) {
                     name: keyword["Keyword"],
                     keywordType: {
                       connect: {
-                        id: kwTypeId,
+                        name: keyword["KWType"],
                       },
                     },
                     handicap: parseInt(keyword["Handicap"]),
@@ -358,11 +331,7 @@ async function movieExists(title, sessionToken) {
         })
         .on("end", async () => {
           try {
-            const keywordResults = await Promise.all(keywordPromises);
-            // console.log({ keywordPromises, keywordResults });
-            // const createdKeywords = keywordResults.map(
-            //   (result) => result.data.data.createKeyword
-            // );
+            await Promise.all(keywordPromises);
             console.log(
               `Successfully created/updated ${keywordPromises.length} keywords!`
             );
@@ -375,13 +344,80 @@ async function movieExists(title, sessionToken) {
     });
   };
 
+  const seedKeywordsFromMoviesCSV = async () => {
+    return new Promise((resolve, reject) => {
+      const keywordPromises = [];
+
+      const limitedCreateKeywords = throat(100, async (keyword) => {
+        if (await keywordExists(keyword, sessionToken)) {
+          // no need to update the keyword, because in Movies.csv, there is no handicap or kwType listed
+          return;
+        }
+
+        // create a new keyword
+        return await axios.post(
+          "http://127.0.0.1:8080/api/graphql",
+          {
+            query: `
+              mutation CreateKeyword($data: KeywordCreateInput!) {
+                createKeyword(data: $data) {
+                      id
+                      name
+                  }
+              }
+            `,
+            variables: {
+              data: {
+                name: keyword,
+              },
+            },
+          },
+          {
+            headers: {
+              Cookie: `keystonejs-session=${sessionToken}`,
+            },
+          }
+        );
+      });
+
+      createReadStream("./scripts/create-movies/Movies.csv")
+        .pipe(csv())
+        .on("data", async (movie) => {
+          // get an array of all the keywords for a particular movie
+          const currentMovieKeywords = movie["Keywords"]
+            .split(",")
+            .map((keyword) => keyword.trim());
+
+          for (const keyword of currentMovieKeywords) {
+            keywordPromises.push(limitedCreateKeywords(keyword));
+          }
+        })
+        .on("end", async () => {
+          try {
+            await Promise.all(keywordPromises);
+            console.log(
+              `Successfully checked ${keywordPromises.length} keywords!`
+            );
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .on("error", (error) => reject(error));
+    });
+  };
+
+  /* ------------------------------ handle sounds ----------------------------- */
+  //each row in Slopsounds.csv only has one slop associated with it
+  //maybe I seed sounds last?
+
   /* ----------------------------- handle movies ----------------------------- */
   const processMoviesCSV = (createdKeywords) => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
       const limitedCreateMovie = throat(10, async (movie) => {
         if (await movieExists(movie["Title"], sessionToken)) {
-          //console.log(`Movie "${movie["Title"]}" already exists.`);
+          //console.log(`Movie "${movie["Title"]}" already exists. Updating...`);
           return;
         }
 
@@ -454,6 +490,7 @@ async function movieExists(title, sessionToken) {
     await seedKeywordTypesFromKWTypesCSV();
     await seedKeywordTypesFromKeywordsCSV();
     await seedKeywordsFromKeywordsCSV();
+    await seedKeywordsFromMoviesCSV();
     //await processMoviesCSV();
   } catch (error) {
     console.error("Error processing CSV files:", error);

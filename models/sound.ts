@@ -24,7 +24,7 @@ export const Sound: ListConfig<Lists.Sound.TypeInfo<any>, any> = list({
     },
   },
   fields: {
-    title: text({ validation: { isRequired: true } }),
+    title: text({ validation: { isRequired: true }, isIndexed: "unique" }),
     photo: image({ storage: "my_S3_images" }),
     movies: relationship({ ref: "Movie.sounds", many: true }),
     audio: text({ validation: { isRequired: true } }),

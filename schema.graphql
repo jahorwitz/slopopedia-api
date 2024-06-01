@@ -343,6 +343,7 @@ type Keyword {
 
 input KeywordWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordWhereInput {
@@ -433,6 +434,7 @@ type KeywordType {
 
 input KeywordTypeWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordTypeWhereInput {
@@ -787,6 +789,7 @@ type Sound {
 
 input SoundWhereUniqueInput {
   id: ID
+  title: String
 }
 
 input SoundWhereInput {
