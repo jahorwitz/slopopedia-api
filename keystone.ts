@@ -1,11 +1,25 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { TypeInfo, Context } from ".keystone/types";
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, req.body.movieTitle + "-" + uniqueSuffix);
+  },
+  //limit file size
+  //delete file image in system after file upload
+  //fs.unlink - look into this after successful upload
+});
+
+const upload = multer({ storage });
+
 import { uploadFile } from "./s3";
-import { main } from "./s3-large-upload";
-const fileUpload = require("express-fileupload");
 dotenv.config();
-//import { lists } from './schema';
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
@@ -21,50 +35,54 @@ export default withAuth(
         ],
       },
       maxFileSize: 200 * 1024 * 1024,
-      extendExpressApp: (app, context) => {
-        app.use(fileUpload());
-        app.post("/api/movie", async (req, res) => {
-          const userId = req.body.userId;
-          const movieTitle = req.body.movieTitle;
-          const movieImage = req.body.movieImage;
-          const fileData = {
-            movieTitle: req.body.movieTitle,
-            movieImage: req.body.movieImage,
-          };
-          console.log({ fileData });
+      extendExpressApp: (app, commonContext) => {
+        app.post(
+          "/api/movie",
+          upload.single("movieImage"),
+          async (req, res) => {
+            const userId = req.body.userId;
+            const movieTitle = req.body.movieTitle;
+            const movieImage = req.body.movieImage;
+            const fileData = {
+              movieTitle: req.body.movieTitle,
+              movieImage: req.file,
+            };
+            console.log({ fileData });
 
-          const s3upload = await uploadFile();
-          console.log(s3upload, "hello s3upload");
-          //req.body.formData look this up
-          //pass that into upload file call
-          console.log(req.body, "hello keystone line 31");
+            const s3upload = await uploadFile(fileData);
+            console.log(s3upload, "hello s3upload");
+            console.log(req.body, "hello keystone line 31");
 
-          //after calling upload file we call graphQL to insert movie into db
-          //find keystone examples
+            //after calling upload file we call graphQL to insert movie into db
+            //find keystone examples
 
-          //const context = await commonContext.withRequest(req, res);
-          //if (!context.session) return res.status(401).end()
-          //const isDraft = req.query?.draft === "1";
-          // const tasks = await context.query.Movie.createOne(
-          //   //gets us access to graphql
-          //   {
-          //     data: {
-          //       author: {},
-          //       title: "",
-          //       description: "",
-          //       releaseYear: null,
-          //       runtime: null,
-          //       photo: null,
-          //       tomatoScore: null,
-          //       howToWatch: "",
-          //       handicap: null,
-          //       keywords: {},
-          //     },
-          //   },
-          // );
+            const context = await commonContext.withRequest(req, res);
+            //work on figuring out access issues from here
 
-          res.json({ success: true });
-        });
+            //if (!context.session) return res.status(401).end()
+            //const isDraft = req.query?.draft === "1";
+            const tasks = await context.query.Movie.createOne(
+              //gets us access to graphql
+              {
+                data: {
+                  author: {},
+                  title: "s3 upload test",
+                  description: "",
+                  releaseYear: null,
+                  runtime: null,
+                  photo: null,
+                  tomatoScore: null,
+                  howToWatch: "",
+
+                  keywords: {},
+                },
+              },
+            );
+            console.log(tasks);
+
+            res.json({ success: true });
+          },
+        );
       },
 
       // extendHttpServer: (server, commonContext) => {

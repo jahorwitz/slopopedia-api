@@ -1,6 +1,5 @@
 require("dotenv").config();
 const fs = require("fs");
-const fileUpload = require("express-fileupload");
 const {
   S3Client,
   PutObjectCommand,
@@ -22,9 +21,12 @@ const s3 = new S3Client({
 });
 
 //upload file to s3
-export const uploadFile = async (data?: {}) => {
+export const uploadFile = async (data: {
+  movieTitle: string;
+  movieImage: { path: string; filename: string; mimetype: string };
+}) => {
   //export const uploadFile = async (image?: { path: any },) => {
-  //const fileContent = fs.readFileSync(data);
+  const fileContent = fs.readFileSync(data.movieImage.path);
   //console.log(fileContent, "hello fileContent")
 
   console.log(data, "s3 hello");
@@ -35,9 +37,9 @@ export const uploadFile = async (data?: {}) => {
   const s3Upload = await s3.send(
     new PutObjectCommand({
       Bucket: S3_BUCKET_NAME,
-      Key: "my-first-object.txt", //needs to be userId-movieName-timeStamp.txt
-      Body: "body text",
-      //Body: Buffer.from(fileContent), //needs to eventually be the movie image
+      Key: data.movieImage.filename, //needs proper extension (mimetype needs to match)
+      Body: fileContent,
+      ContentType: data.movieImage.mimetype,
     }),
   );
 
