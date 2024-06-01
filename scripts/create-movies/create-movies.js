@@ -6,6 +6,11 @@ const throat = require("throat");
 
 dotenv.config();
 
+const apiUri =
+  process.env.NODE_ENV === "production"
+    ? "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql"
+    : "http://localhost:8080/api/graphql";
+
 /* -------------------------------------------------------------------------- */
 /*                              helper functions                              */
 /* -------------------------------------------------------------------------- */
@@ -13,7 +18,7 @@ dotenv.config();
 // check if a keyword type already exists in the database
 async function kwTypeExists(kwType, sessionToken) {
   const response = await axios.post(
-    "http://127.0.0.1:8080/api/graphql",
+    apiUri,
     {
       query: `
         query GetKeywordType($name: StringFilter!) {
@@ -40,7 +45,7 @@ async function kwTypeExists(kwType, sessionToken) {
 // check if a keyword already exists in the database
 async function keywordExists(keyword, sessionToken) {
   const response = await axios.post(
-    "http://127.0.0.1:8080/api/graphql",
+    apiUri,
     {
       query: `
         query GetKeyword($name: StringFilter!) {
@@ -72,7 +77,7 @@ async function keywordExists(keyword, sessionToken) {
 async function movieExists(title, releaseYear, sessionToken) {
   // a movie exists in the database if both the title and release year are matched
   const response = await axios.post(
-    "http://127.0.0.1:8080/api/graphql",
+    apiUri,
     {
       query: `
       query GetMovies($where: MovieWhereInput!) {
@@ -110,7 +115,7 @@ async function movieExists(title, releaseYear, sessionToken) {
 // check if a sound already exists in the database
 async function soundExists(title, sessionToken) {
   const response = await axios.post(
-    "http://127.0.0.1:8080/api/graphql",
+    apiUri,
     {
       query: `
       query GetSound($where: SoundWhereUniqueInput!) {
@@ -148,7 +153,7 @@ async function soundExists(title, sessionToken) {
         authenticateUserWithPassword: { sessionToken },
       },
     },
-  } = await axios.post("http://127.0.0.1:8080/api/graphql", {
+  } = await axios.post(apiUri, {
     query: `
         mutation Mutation($username: String!, $password: String!) {
           authenticateUserWithPassword(username: $username, password: $password) {
@@ -166,6 +171,7 @@ async function soundExists(title, sessionToken) {
 
   /* -------------------------- handle keyword types -------------------------- */
 
+  // refactor to use throat
   const seedKeywordTypesFromKWTypesCSV = () => {
     // since createReadStream doesn't return a promise, we wrap it in one, so that we can await it later on
     return new Promise((resolve, reject) => {
@@ -175,15 +181,12 @@ async function soundExists(title, sessionToken) {
         .on("data", async (keywordType) => {
           const promise = (async () => {
             if (await kwTypeExists(keywordType["Display"], sessionToken)) {
-              console.log(
-                `KeywordType "${keywordType["Display"]}" already exists.`
-              );
               // no need to update the kwType
               return;
             }
             // create kwType
             return await axios.post(
-              "http://127.0.0.1:8080/api/graphql",
+              apiUri,
               {
                 query: `
               mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
@@ -211,12 +214,15 @@ async function soundExists(title, sessionToken) {
         })
         .on("end", async () => {
           try {
+            console.log(
+              "Parsing keyword types from KWTypes.csv. Please wait..."
+            );
             const keywordTypeResults = await Promise.all(keywordTypePromises);
             const createdKeywordTypes = keywordTypeResults.map(
               (result) => result?.data?.data?.createKeywordType
             );
             console.log(
-              `Successfully created ${createdKeywordTypes.length} keywords!`
+              `Successfully parsed ${createdKeywordTypes.length} keyword types!`
             );
             resolve(createdKeywordTypes);
           } catch (error) {
@@ -227,6 +233,7 @@ async function soundExists(title, sessionToken) {
     });
   };
 
+  // refactor to use throat
   const seedKeywordTypesFromKeywordsCSV = () => {
     return new Promise((resolve, reject) => {
       const keywordTypePromises = [];
@@ -235,13 +242,12 @@ async function soundExists(title, sessionToken) {
         .on("data", async (keyword) => {
           const promise = (async () => {
             if (await kwTypeExists(keyword["KWType"], sessionToken)) {
-              console.log(`KeywordType "${keyword["KWType"]}" already exists.`);
               // no need to update the kwType
               return;
             }
             // create kwType
             return await axios.post(
-              "http://127.0.0.1:8080/api/graphql",
+              apiUri,
               {
                 query: `
               mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
@@ -269,12 +275,15 @@ async function soundExists(title, sessionToken) {
         })
         .on("end", async () => {
           try {
+            console.log(
+              "Parsing keyword types from Keywords.csv. Please wait..."
+            );
             const keywordTypeResults = await Promise.all(keywordTypePromises);
             const createdKeywordTypes = keywordTypeResults.map(
               (result) => result?.data?.data?.createKeywordType
             );
             console.log(
-              `Successfully created ${createdKeywordTypes.length} keywords!`
+              `Successfully parsed ${createdKeywordTypes.length} keywords!`
             );
             resolve(createdKeywordTypes);
           } catch (error) {
@@ -286,6 +295,7 @@ async function soundExists(title, sessionToken) {
   };
 
   /* ----------------------------- handle keywords ---------------------------- */
+  // refactor to use throat
   const seedKeywordsFromKeywordsCSV = async () => {
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
@@ -294,13 +304,9 @@ async function soundExists(title, sessionToken) {
         .on("data", async (keyword) => {
           const promise = (async () => {
             if (await keywordExists(keyword["Keyword"], sessionToken)) {
-              console.log(
-                `Keyword "${keyword["Keyword"]}" already exists. Updating...`
-              );
-
               // update the keyword with its handicap and kwType
               return await axios.post(
-                "http://127.0.0.1:8080/api/graphql",
+                apiUri,
                 {
                   query: `
                 mutation UpdateKeyword($where: KeywordWhereUniqueInput!, $data: KeywordUpdateInput!) {
@@ -331,9 +337,8 @@ async function soundExists(title, sessionToken) {
             }
 
             // create a new keyword
-            console.log(`Creating keyword "${keyword["Keyword"]}".`);
             return await axios.post(
-              "http://127.0.0.1:8080/api/graphql",
+              apiUri,
               {
                 query: `
               mutation CreateKeyword($data: KeywordCreateInput!) {
@@ -367,9 +372,10 @@ async function soundExists(title, sessionToken) {
         })
         .on("end", async () => {
           try {
+            console.log("Parsing keywords from Keywords.csv. Please wait...");
             await Promise.all(keywordPromises);
             console.log(
-              `Successfully created/updated ${keywordPromises.length} keywords!`
+              `Successfully parsed ${keywordPromises.length} keywords!`
             );
             resolve();
           } catch (error) {
@@ -384,7 +390,7 @@ async function soundExists(title, sessionToken) {
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
 
-      const limitedCreateKeywords = throat(100, async (keyword) => {
+      const limitedHandleKeywords = throat(100, async (keyword) => {
         if (await keywordExists(keyword, sessionToken)) {
           // no need to update the keyword, because in Movies.csv, there is no handicap or kwType listed
           return;
@@ -392,7 +398,7 @@ async function soundExists(title, sessionToken) {
 
         // create a new keyword
         return await axios.post(
-          "http://127.0.0.1:8080/api/graphql",
+          apiUri,
           {
             query: `
               mutation CreateKeyword($data: KeywordCreateInput!) {
@@ -425,14 +431,15 @@ async function soundExists(title, sessionToken) {
             .map((keyword) => keyword.trim());
 
           for (const keyword of currentMovieKeywords) {
-            keywordPromises.push(limitedCreateKeywords(keyword));
+            keywordPromises.push(limitedHandleKeywords(keyword));
           }
         })
         .on("end", async () => {
           try {
+            console.log("Parsing keywords from Movies.csv. Please wait...");
             await Promise.all(keywordPromises);
             console.log(
-              `Successfully checked ${keywordPromises.length} keywords!`
+              `Successfully parsed ${keywordPromises.length} keywords!`
             );
             resolve();
           } catch (error) {
@@ -447,14 +454,13 @@ async function soundExists(title, sessionToken) {
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
-      const limitedCreateMovie = throat(100, async (movie) => {
+      const limitedHandleMovie = throat(100, async (movie) => {
         const checkedMovie = await movieExists(
           movie["Title"],
           movie["Release Year"],
           sessionToken
         );
         if (checkedMovie) {
-          //console.log(`Movie "${movie["Title"]}" already exists. Updating...`);
           const currentMovieKeywords = movie["Keywords"]
             .split(",")
             .map((keyword) => {
@@ -463,7 +469,7 @@ async function soundExists(title, sessionToken) {
           // update the movie
           return await axios
             .post(
-              "http://127.0.0.1:8080/api/graphql",
+              apiUri,
               {
                 query: `
             mutation UpdateMovie($where: MovieWhereUniqueInput!, $data: MovieUpdateInput!) {
@@ -514,7 +520,7 @@ async function soundExists(title, sessionToken) {
         // create movie
         return axios
           .post(
-            "http://127.0.0.1:8080/api/graphql",
+            apiUri,
             {
               query: `
           mutation CreateMovie($data: MovieCreateInput!) {
@@ -558,14 +564,13 @@ async function soundExists(title, sessionToken) {
       createReadStream("./scripts/create-movies/Movies.csv")
         .pipe(csv())
         .on("data", (movie) => {
-          moviePromises.push(limitedCreateMovie(movie));
+          moviePromises.push(limitedHandleMovie(movie));
         })
         .on("end", async () => {
           try {
+            console.log("Parsing movies from Movies.csv. Please wait...");
             const movieResults = await Promise.all(moviePromises);
-            console.log(
-              `Successfully created/updated ${movieResults.length} movies!`
-            );
+            console.log(`Successfully parsed ${movieResults.length} movies!`);
             resolve();
           } catch (error) {
             reject(error);
@@ -583,7 +588,7 @@ async function soundExists(title, sessionToken) {
         data: { movies: allMovies },
       },
     } = await axios.post(
-      "http://127.0.0.1:8080/api/graphql",
+      apiUri,
       {
         query: `
         query GetMovies($where: MovieWhereInput!) {
@@ -608,11 +613,9 @@ async function soundExists(title, sessionToken) {
 
     return new Promise((resolve, reject) => {
       const soundPromises = [];
-      const limitedCreateSound = throat(100, async (sound) => {
+      const limitedHandleSound = throat(100, async (sound) => {
         const checkedSound = await soundExists(sound["Name"], sessionToken);
         if (checkedSound) {
-          //console.log(`Sound "${sound["Name"]}" already exists. Updating...`);
-
           // each row in Slopsounds.csv only has one slop associated with it
           // find the id of the associated sound's slop
           const movieId = allMovies.find(
@@ -622,7 +625,7 @@ async function soundExists(title, sessionToken) {
           // update the sound
           return await axios
             .post(
-              "http://127.0.0.1:8080/api/graphql",
+              apiUri,
               {
                 query: `
             mutation UpdateSound($where: SoundWhereUniqueInput!, $data: SoundUpdateInput!) {
@@ -665,7 +668,7 @@ async function soundExists(title, sessionToken) {
         // create sound
         return axios
           .post(
-            "http://127.0.0.1:8080/api/graphql",
+            apiUri,
             {
               query: `
           mutation CreateSound($data: SoundCreateInput!) {
@@ -701,14 +704,13 @@ async function soundExists(title, sessionToken) {
       createReadStream("./scripts/Slopsounds.csv")
         .pipe(csv())
         .on("data", (sound) => {
-          soundPromises.push(limitedCreateSound(sound));
+          soundPromises.push(limitedHandleSound(sound));
         })
         .on("end", async () => {
           try {
+            console.log("Parsing sounds from Slopsounds.csv. Please wait...");
             const soundResults = await Promise.all(soundPromises);
-            console.log(
-              `Successfully created/updated ${soundResults.length} sounds!`
-            );
+            console.log(`Successfully parsed ${soundResults.length} sounds!`);
             resolve();
           } catch (error) {
             reject(error);
@@ -725,6 +727,9 @@ async function soundExists(title, sessionToken) {
     await seedKeywordsFromMoviesCSV();
     await seedMoviesFromMoviesCSV();
     await seedSoundsFromSlopsoundsCSV();
+    console.log(
+      "create-movies.js script has finished running.\nAll parsed items have either been created or updated in the database."
+    );
   } catch (error) {
     console.error("Error processing CSV files:", error);
   }
