@@ -113,7 +113,7 @@ async function movieExists(title, releaseYear, sessionToken) {
 }
 
 // check if a sound already exists in the database
-async function soundExists(title, sessionToken) {
+async function soundExists(soundUrl, sessionToken) {
   const response = await axios.post(
     apiUri,
     {
@@ -127,7 +127,7 @@ async function soundExists(title, sessionToken) {
       `,
       variables: {
         where: {
-          title: title,
+          audio: soundUrl,
         },
       },
     },
@@ -615,7 +615,7 @@ async function soundExists(title, sessionToken) {
       const soundPromises = [];
 
       const limitedHandleSound = throat(10, async (sound) => {
-        const checkedSound = await soundExists(sound["Name"], sessionToken);
+        const checkedSound = await soundExists(sound["Sound"], sessionToken);
         if (checkedSound) {
           // each row in Slopsounds.csv only has one slop associated with it
           // find the id of the associated sound's slop
@@ -637,12 +637,11 @@ async function soundExists(title, sessionToken) {
             }
             `,
                 variables: {
-                  where: { title: sound["Name"].trim() },
+                  where: { audio: sound["Sound"].trim() },
                   data: {
                     title: sound["Name"].trim(),
                     movies: { connect: [{ id: movieId }] },
                     //photo: sound["Image"],
-                    audio: sound["Sound"].trim(),
                   },
                 },
               },

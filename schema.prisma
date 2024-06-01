@@ -127,14 +127,14 @@ model Preference {
 
 model Sound {
   id              String  @id @default(uuid())
-  title           String  @unique @default("")
+  title           String  @default("")
   photo_filesize  Int?
   photo_extension String?
   photo_width     Int?
   photo_height    Int?
   photo_id        String?
   movies          Movie[] @relation("Movie_sounds")
-  audio           String  @default("")
+  audio           String  @unique @default("")
 }
 
 model User {

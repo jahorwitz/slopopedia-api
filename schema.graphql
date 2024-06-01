@@ -789,7 +789,7 @@ type Sound {
 
 input SoundWhereUniqueInput {
   id: ID
-  title: String
+  audio: String
 }
 
 input SoundWhereInput {
