@@ -6,6 +6,9 @@
   - A unique constraint covering the columns `[title]` on the table `Sound` will be added. If there are existing duplicate values, this will fail.
 
 */
+-- AlterTable
+ALTER TABLE `movie` MODIFY `description` TEXT NULL;
+
 -- CreateIndex
 CREATE UNIQUE INDEX `Keyword_name_key` ON `Keyword`(`name`);
 

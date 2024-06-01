@@ -75,7 +75,7 @@ model Movie {
   author              User?      @relation("Movie_author", fields: [authorId], references: [id])
   authorId            String?    @map("author")
   title               String     @default("")
-  description         String     @default("")
+  description         String?    @mysql.Text
   releaseYear         Int?       @default(1970)
   runtime             Int?       @default(0)
   photo_filesize      Int?

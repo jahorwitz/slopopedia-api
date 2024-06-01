@@ -102,9 +102,6 @@ async function movieExists(title, releaseYear, sessionToken) {
     }
   );
 
-  if (title === "Tango and Cash") {
-    console.log("???");
-  }
   if (response.data.data.movies.length <= 0) {
     return false;
   }
@@ -426,7 +423,7 @@ async function movieExists(title, releaseYear, sessionToken) {
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
-      const limitedCreateMovie = throat(10, async (movie) => {
+      const limitedCreateMovie = throat(100, async (movie) => {
         const checkedMovie = await movieExists(
           movie["Title"],
           movie["Release Year"],
@@ -512,9 +509,11 @@ async function movieExists(title, releaseYear, sessionToken) {
                   title: movie["Title"],
                   status: "published",
                   tomatoScore: parseInt(movie["Tomato Score"]),
-                  keywords: {
-                    connect: currentMovieKeywords,
-                  },
+                  keywords: movie["Keywords"]
+                    ? {
+                        connect: currentMovieKeywords,
+                      }
+                    : { connect: [] },
                 },
               },
             },
@@ -525,12 +524,10 @@ async function movieExists(title, releaseYear, sessionToken) {
             }
           )
           .then((data) => {
-            if (movie["Title"] === "Tango and Cash") {
-              console.log("!!!"); // Finally solved! The description field for movies is restricted in length. I should delete the migration file, update the movie schema and do npm run dev
-            }
+            //console.log(data, movie);
           })
           .catch((err) => {
-            console.error(err, movie["Title"]);
+            console.error(err, movie);
           });
       });
 
@@ -562,7 +559,7 @@ async function movieExists(title, releaseYear, sessionToken) {
     await seedKeywordTypesFromKWTypesCSV();
     await seedKeywordTypesFromKeywordsCSV();
     await seedKeywordsFromKeywordsCSV();
-    //await seedKeywordsFromMoviesCSV();
+    await seedKeywordsFromMoviesCSV();
     await seedMoviesFromMoviesCSV();
   } catch (error) {
     console.error("Error processing CSV files:", error);
