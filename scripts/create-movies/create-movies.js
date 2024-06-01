@@ -34,7 +34,6 @@ async function kwTypeExists(kwType, sessionToken) {
     }
   );
 
-  //console.log({ keywordData: response.data.data.keywordTypes });
   return response.data.data.keywordTypes?.length > 0;
 }
 
@@ -66,7 +65,6 @@ async function keywordExists(keyword, sessionToken) {
     }
   );
 
-  //console.log({ keywordData: response.data.data.keywords });
   return response.data.data.keywords?.length > 0;
 }
 
@@ -105,8 +103,37 @@ async function movieExists(title, releaseYear, sessionToken) {
   if (response.data.data.movies.length <= 0) {
     return false;
   }
-  //console.log({ movieData: response.data.data?.movies });
+  // if movie is found, we return the movie
   return response.data.data.movies[0];
+}
+
+// check if a sound already exists in the database
+async function soundExists(title, sessionToken) {
+  const response = await axios.post(
+    "http://127.0.0.1:8080/api/graphql",
+    {
+      query: `
+      query GetSound($where: SoundWhereUniqueInput!) {
+        sound(where: $where) {
+            id
+            title
+          }
+        }
+      `,
+      variables: {
+        where: {
+          title: title,
+        },
+      },
+    },
+    {
+      headers: {
+        Cookie: `keystonejs-session=${sessionToken}`,
+      },
+    }
+  );
+
+  return Boolean(response.data.data.sound);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,6 +167,7 @@ async function movieExists(title, releaseYear, sessionToken) {
   /* -------------------------- handle keyword types -------------------------- */
 
   const seedKeywordTypesFromKWTypesCSV = () => {
+    // since createReadStream doesn't return a promise, we wrap it in one, so that we can await it later on
     return new Promise((resolve, reject) => {
       const keywordTypePromises = [];
       createReadStream("./scripts/KWTypes.csv")
@@ -184,14 +212,12 @@ async function movieExists(title, releaseYear, sessionToken) {
         .on("end", async () => {
           try {
             const keywordTypeResults = await Promise.all(keywordTypePromises);
-            //console.log({ keywordTypePromises, keywordTypeResults });
             const createdKeywordTypes = keywordTypeResults.map(
               (result) => result?.data?.data?.createKeywordType
             );
             console.log(
               `Successfully created ${createdKeywordTypes.length} keywords!`
             );
-            //console.log({ createdKeywordTypes });
             resolve(createdKeywordTypes);
           } catch (error) {
             reject(error);
@@ -244,14 +270,12 @@ async function movieExists(title, releaseYear, sessionToken) {
         .on("end", async () => {
           try {
             const keywordTypeResults = await Promise.all(keywordTypePromises);
-            //console.log({ keywordTypePromises, keywordTypeResults });
             const createdKeywordTypes = keywordTypeResults.map(
               (result) => result?.data?.data?.createKeywordType
             );
             console.log(
               `Successfully created ${createdKeywordTypes.length} keywords!`
             );
-            //console.log({ createdKeywordTypes });
             resolve(createdKeywordTypes);
           } catch (error) {
             reject(error);
@@ -552,8 +576,147 @@ async function movieExists(title, releaseYear, sessionToken) {
   };
 
   /* ------------------------------ handle sounds ----------------------------- */
-  // each row in Slopsounds.csv only has one slop associated with it
-  // maybe I seed sounds last?
+  const seedSoundsFromSlopsoundsCSV = async () => {
+    // query the database for all movies
+    const {
+      data: {
+        data: { movies: allMovies },
+      },
+    } = await axios.post(
+      "http://127.0.0.1:8080/api/graphql",
+      {
+        query: `
+        query GetMovies($where: MovieWhereInput!) {
+          movies(where: $where) {
+              id
+              title
+            }
+          }
+        `,
+        variables: {
+          where: {
+            status: { equals: "published" },
+          },
+        },
+      },
+      {
+        headers: {
+          Cookie: `keystonejs-session=${sessionToken}`,
+        },
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      const soundPromises = [];
+      const limitedCreateSound = throat(100, async (sound) => {
+        const checkedSound = await soundExists(sound["Name"], sessionToken);
+        if (checkedSound) {
+          //console.log(`Sound "${sound["Name"]}" already exists. Updating...`);
+
+          // each row in Slopsounds.csv only has one slop associated with it
+          // find the id of the associated sound's slop
+          const movieId = allMovies.find(
+            (movie) => movie.title === sound["Slop"]
+          ).id;
+
+          // update the sound
+          return await axios
+            .post(
+              "http://127.0.0.1:8080/api/graphql",
+              {
+                query: `
+            mutation UpdateSound($where: SoundWhereUniqueInput!, $data: SoundUpdateInput!) {
+              updateSound(where: $where, data: $data) {
+                    id
+                    title
+                }
+            }
+            `,
+                variables: {
+                  where: { title: sound["Name"].trim() },
+                  data: {
+                    title: sound["Name"].trim(),
+                    movies: { connect: [{ id: movieId }] },
+                    //photo: sound["Image"],
+                    audio: sound["Sound"].trim(),
+                  },
+                },
+              },
+              {
+                headers: {
+                  Cookie: `keystonejs-session=${sessionToken}`,
+                },
+              }
+            )
+            .catch((error) => {
+              if (error.response) {
+                console.error("Error response:", error.response.data);
+              } else {
+                console.error("Error message:", error.message);
+              }
+            });
+        }
+
+        // find the id of the associated sound's slop
+        const movieId = allMovies.find(
+          (movie) => movie.title === sound["Slop"]
+        ).id;
+
+        // create sound
+        return axios
+          .post(
+            "http://127.0.0.1:8080/api/graphql",
+            {
+              query: `
+          mutation CreateSound($data: SoundCreateInput!) {
+            createSound(data: $data) {
+                  id
+                  title
+              }
+          }
+          `,
+              variables: {
+                data: {
+                  title: sound["Name"].trim(),
+                  movies: { connect: [{ id: movieId }] },
+                  //photo: sound["Image"],
+                  audio: sound["Sound"].trim(),
+                },
+              },
+            },
+            {
+              headers: {
+                Cookie: `keystonejs-session=${sessionToken}`,
+              },
+            }
+          )
+          .then((data) => {
+            //console.log(data, sound);
+          })
+          .catch((err) => {
+            console.error(err, sound);
+          });
+      });
+
+      createReadStream("./scripts/Slopsounds.csv")
+        .pipe(csv())
+        .on("data", (sound) => {
+          soundPromises.push(limitedCreateSound(sound));
+        })
+        .on("end", async () => {
+          try {
+            const soundResults = await Promise.all(soundPromises);
+            console.log(
+              `Successfully created/updated ${soundResults.length} sounds!`
+            );
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .on("error", (error) => reject(error));
+    });
+  };
 
   try {
     await seedKeywordTypesFromKWTypesCSV();
@@ -561,6 +724,7 @@ async function movieExists(title, releaseYear, sessionToken) {
     await seedKeywordsFromKeywordsCSV();
     await seedKeywordsFromMoviesCSV();
     await seedMoviesFromMoviesCSV();
+    await seedSoundsFromSlopsoundsCSV();
   } catch (error) {
     console.error("Error processing CSV files:", error);
   }
