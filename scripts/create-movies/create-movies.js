@@ -71,20 +71,28 @@ async function keywordExists(keyword, sessionToken) {
 }
 
 // check if a movie already exists in the database
-async function movieExists(title, sessionToken) {
+async function movieExists(title, releaseYear, sessionToken) {
+  // a movie exists in the database if both the title and release year are matched
   const response = await axios.post(
     "http://127.0.0.1:8080/api/graphql",
     {
       query: `
-        query GetMovie($title: StringFilter!) {
-          movies(where: { title: $title }) {
+      query GetMovies($where: MovieWhereInput!) {
+        movies(where: $where) {
             id
             title
           }
         }
       `,
       variables: {
-        title: { equals: title },
+        where: {
+          title: { equals: title },
+          AND: [
+            {
+              releaseYear: { equals: parseInt(releaseYear) },
+            },
+          ],
+        },
       },
     },
     {
@@ -93,8 +101,15 @@ async function movieExists(title, sessionToken) {
       },
     }
   );
+
+  if (title === "Tango and Cash") {
+    console.log("???");
+  }
+  if (response.data.data.movies.length <= 0) {
+    return false;
+  }
   //console.log({ movieData: response.data.data?.movies });
-  return response.data.data.movies.length > 0;
+  return response.data.data.movies[0];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -407,65 +422,116 @@ async function movieExists(title, sessionToken) {
     });
   };
 
-  /* ------------------------------ handle sounds ----------------------------- */
-  //each row in Slopsounds.csv only has one slop associated with it
-  //maybe I seed sounds last?
-
   /* ----------------------------- handle movies ----------------------------- */
-  const processMoviesCSV = (createdKeywords) => {
+  const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
       const limitedCreateMovie = throat(10, async (movie) => {
-        if (await movieExists(movie["Title"], sessionToken)) {
+        const checkedMovie = await movieExists(
+          movie["Title"],
+          movie["Release Year"],
+          sessionToken
+        );
+        if (checkedMovie) {
           //console.log(`Movie "${movie["Title"]}" already exists. Updating...`);
-          return;
+          const currentMovieKeywords = movie["Keywords"]
+            .split(",")
+            .map((keyword) => {
+              return { name: keyword.trim() };
+            });
+          // update the movie
+          return await axios
+            .post(
+              "http://127.0.0.1:8080/api/graphql",
+              {
+                query: `
+            mutation UpdateMovie($where: MovieWhereUniqueInput!, $data: MovieUpdateInput!) {
+              updateMovie(where: $where, data: $data) {
+                    id
+                    title
+                }
+            }
+            `,
+                variables: {
+                  where: { id: checkedMovie.id },
+                  data: {
+                    description: movie["Description"],
+                    handicap: parseInt(movie["Handicap"]),
+                    howToWatch: movie["Availability"],
+                    releaseYear: parseInt(movie["Release Year"]),
+                    runtime: parseInt(movie["Runtime"]),
+                    title: movie["Title"],
+                    status: "published",
+                    tomatoScore: parseInt(movie["Tomato Score"]),
+                    keywords: {
+                      connect: currentMovieKeywords,
+                    },
+                  },
+                },
+              },
+              {
+                headers: {
+                  Cookie: `keystonejs-session=${sessionToken}`,
+                },
+              }
+            )
+            .catch((error) => {
+              if (error.response) {
+                console.error("Error response:", error.response.data);
+              } else {
+                console.error("Error message:", error.message);
+              }
+            });
         }
 
-        //console.log({ createdKeywords });
+        const currentMovieKeywords = movie["Keywords"]
+          .split(",")
+          .map((keyword) => {
+            return { name: keyword.trim() };
+          });
 
-        const keywordIds = movie["Keywords"]
-          ? movie["Keywords"]
-              .split(",")
-              .map((x) =>
-                createdKeywords.find((keyword) => keyword.name === x.trim())
-              )
-              .filter((x) => !!x)
-              .map((keyword) => ({ id: keyword.id }))
-          : [];
-
-        const promise = axios.post(
-          "http://127.0.0.1:8080/api/graphql",
-          {
-            query: `
+        // create movie
+        return axios
+          .post(
+            "http://127.0.0.1:8080/api/graphql",
+            {
+              query: `
           mutation CreateMovie($data: MovieCreateInput!) {
             createMovie(data: $data) {
                   id
               }
           }
           `,
-            variables: {
-              data: {
-                description: movie["Title"],
-                handicap: parseInt(movie["Handicap"]),
-                howToWatch: movie["Availability"],
-                releaseYear: parseInt(movie["Release Year"]),
-                runtime: parseInt(movie["Runtime"]),
-                title: movie["Title"],
-                status: "published",
-                tomatoScore: parseInt(movie["Tomato Score"]),
-                keywords: {
-                  connect: keywordIds,
+              variables: {
+                data: {
+                  description: movie["Description"],
+                  handicap: parseInt(movie["Handicap"]),
+                  howToWatch: movie["Availability"],
+                  releaseYear: parseInt(movie["Release Year"]),
+                  runtime: parseInt(movie["Runtime"]),
+                  title: movie["Title"],
+                  status: "published",
+                  tomatoScore: parseInt(movie["Tomato Score"]),
+                  keywords: {
+                    connect: currentMovieKeywords,
+                  },
                 },
               },
             },
-          },
-          {
-            headers: {
-              Cookie: `keystonejs-session=${sessionToken}`,
-            },
-          }
-        );
-        return promise;
+            {
+              headers: {
+                Cookie: `keystonejs-session=${sessionToken}`,
+              },
+            }
+          )
+          .then((data) => {
+            if (movie["Title"] === "Tango and Cash") {
+              console.log("!!!"); // Finally solved! The description field for movies is restricted in length. I should delete the migration file, update the movie schema and do npm run dev
+            }
+          })
+          .catch((err) => {
+            console.error(err, movie["Title"]);
+          });
       });
 
       createReadStream("./scripts/create-movies/Movies.csv")
@@ -476,7 +542,9 @@ async function movieExists(title, sessionToken) {
         .on("end", async () => {
           try {
             const movieResults = await Promise.all(moviePromises);
-            console.log(`Successfully created ${movieResults.length} movies!`);
+            console.log(
+              `Successfully created/updated ${movieResults.length} movies!`
+            );
             resolve();
           } catch (error) {
             reject(error);
@@ -486,12 +554,16 @@ async function movieExists(title, sessionToken) {
     });
   };
 
+  /* ------------------------------ handle sounds ----------------------------- */
+  // each row in Slopsounds.csv only has one slop associated with it
+  // maybe I seed sounds last?
+
   try {
     await seedKeywordTypesFromKWTypesCSV();
     await seedKeywordTypesFromKeywordsCSV();
     await seedKeywordsFromKeywordsCSV();
-    await seedKeywordsFromMoviesCSV();
-    //await processMoviesCSV();
+    //await seedKeywordsFromMoviesCSV();
+    await seedMoviesFromMoviesCSV();
   } catch (error) {
     console.error("Error processing CSV files:", error);
   }
