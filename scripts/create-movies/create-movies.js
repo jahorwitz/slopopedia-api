@@ -171,46 +171,46 @@ async function soundExists(title, sessionToken) {
 
   /* -------------------------- handle keyword types -------------------------- */
 
-  // refactor to use throat
   const seedKeywordTypesFromKWTypesCSV = () => {
     // since createReadStream doesn't return a promise, we wrap it in one, so that we can await it later on
     return new Promise((resolve, reject) => {
       const keywordTypePromises = [];
+
+      const limitedHandleKeywordTypes = throat(10, async (keywordType) => {
+        if (await kwTypeExists(keywordType["Display"], sessionToken)) {
+          // no need to update the kwType
+          return;
+        }
+        // create kwType
+        return await axios.post(
+          apiUri,
+          {
+            query: `
+          mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
+            createKeywordType(data: $data) {
+                  id
+                  name
+              }
+          }
+          `,
+            variables: {
+              data: {
+                name: keywordType["Display"],
+              },
+            },
+          },
+          {
+            headers: {
+              Cookie: `keystonejs-session=${sessionToken}`,
+            },
+          }
+        );
+      });
+
       createReadStream("./scripts/KWTypes.csv")
         .pipe(csv())
         .on("data", async (keywordType) => {
-          const promise = (async () => {
-            if (await kwTypeExists(keywordType["Display"], sessionToken)) {
-              // no need to update the kwType
-              return;
-            }
-            // create kwType
-            return await axios.post(
-              apiUri,
-              {
-                query: `
-              mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
-                createKeywordType(data: $data) {
-                      id
-                      name
-                  }
-              }
-              `,
-                variables: {
-                  data: {
-                    name: keywordType["Display"],
-                  },
-                },
-              },
-              {
-                headers: {
-                  Cookie: `keystonejs-session=${sessionToken}`,
-                },
-              }
-            );
-          })();
-
-          keywordTypePromises.push(promise);
+          keywordTypePromises.push(limitedHandleKeywordTypes(keywordType));
         })
         .on("end", async () => {
           try {
@@ -233,45 +233,45 @@ async function soundExists(title, sessionToken) {
     });
   };
 
-  // refactor to use throat
   const seedKeywordTypesFromKeywordsCSV = () => {
     return new Promise((resolve, reject) => {
       const keywordTypePromises = [];
+
+      const limitedHandleKeywordTypes = throat(10, async (keyword) => {
+        if (await kwTypeExists(keyword["KWType"], sessionToken)) {
+          // no need to update the kwType
+          return;
+        }
+        // create kwType
+        return await axios.post(
+          apiUri,
+          {
+            query: `
+          mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
+            createKeywordType(data: $data) {
+                  id
+                  name
+              }
+          }
+          `,
+            variables: {
+              data: {
+                name: keyword["KWType"],
+              },
+            },
+          },
+          {
+            headers: {
+              Cookie: `keystonejs-session=${sessionToken}`,
+            },
+          }
+        );
+      });
+
       createReadStream("./scripts/create-movies/Keywords.csv")
         .pipe(csv())
         .on("data", async (keyword) => {
-          const promise = (async () => {
-            if (await kwTypeExists(keyword["KWType"], sessionToken)) {
-              // no need to update the kwType
-              return;
-            }
-            // create kwType
-            return await axios.post(
-              apiUri,
-              {
-                query: `
-              mutation CreateKeywordType($data: KeywordTypeCreateInput!) {
-                createKeywordType(data: $data) {
-                      id
-                      name
-                  }
-              }
-              `,
-                variables: {
-                  data: {
-                    name: keyword["KWType"],
-                  },
-                },
-              },
-              {
-                headers: {
-                  Cookie: `keystonejs-session=${sessionToken}`,
-                },
-              }
-            );
-          })();
-
-          keywordTypePromises.push(promise);
+          keywordTypePromises.push(limitedHandleKeywordTypes(keyword));
         })
         .on("end", async () => {
           try {
@@ -295,80 +295,80 @@ async function soundExists(title, sessionToken) {
   };
 
   /* ----------------------------- handle keywords ---------------------------- */
-  // refactor to use throat
   const seedKeywordsFromKeywordsCSV = async () => {
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
+
+      const limitedHandleKeywords = throat(10, async (keyword) => {
+        if (await keywordExists(keyword["Keyword"], sessionToken)) {
+          // update the keyword with its handicap and kwType
+          return await axios.post(
+            apiUri,
+            {
+              query: `
+            mutation UpdateKeyword($where: KeywordWhereUniqueInput!, $data: KeywordUpdateInput!) {
+              updateKeyword(where: $where, data: $data) {
+                    id
+                    name
+                }
+            }
+            `,
+              variables: {
+                where: { name: keyword["Keyword"] },
+                data: {
+                  keywordType: {
+                    connect: {
+                      name: keyword["KWType"],
+                    },
+                  },
+                  handicap: parseInt(keyword["Handicap"]),
+                },
+              },
+            },
+            {
+              headers: {
+                Cookie: `keystonejs-session=${sessionToken}`,
+              },
+            }
+          );
+        }
+
+        // create a new keyword
+        return await axios.post(
+          apiUri,
+          {
+            query: `
+          mutation CreateKeyword($data: KeywordCreateInput!) {
+            createKeyword(data: $data) {
+                  id
+                  name
+              }
+          }
+          `,
+            variables: {
+              data: {
+                name: keyword["Keyword"],
+                keywordType: {
+                  connect: {
+                    name: keyword["KWType"],
+                  },
+                },
+                handicap: parseInt(keyword["Handicap"]),
+              },
+            },
+          },
+          {
+            headers: {
+              Cookie: `keystonejs-session=${sessionToken}`,
+            },
+          }
+        );
+      });
+
       createReadStream("./scripts/create-movies/Keywords.csv")
         .pipe(csv())
         .on("data", async (keyword) => {
-          const promise = (async () => {
-            if (await keywordExists(keyword["Keyword"], sessionToken)) {
-              // update the keyword with its handicap and kwType
-              return await axios.post(
-                apiUri,
-                {
-                  query: `
-                mutation UpdateKeyword($where: KeywordWhereUniqueInput!, $data: KeywordUpdateInput!) {
-                  updateKeyword(where: $where, data: $data) {
-                        id
-                        name
-                    }
-                }
-                `,
-                  variables: {
-                    where: { name: keyword["Keyword"] },
-                    data: {
-                      keywordType: {
-                        connect: {
-                          name: keyword["KWType"],
-                        },
-                      },
-                      handicap: parseInt(keyword["Handicap"]),
-                    },
-                  },
-                },
-                {
-                  headers: {
-                    Cookie: `keystonejs-session=${sessionToken}`,
-                  },
-                }
-              );
-            }
-
-            // create a new keyword
-            return await axios.post(
-              apiUri,
-              {
-                query: `
-              mutation CreateKeyword($data: KeywordCreateInput!) {
-                createKeyword(data: $data) {
-                      id
-                      name
-                  }
-              }
-              `,
-                variables: {
-                  data: {
-                    name: keyword["Keyword"],
-                    keywordType: {
-                      connect: {
-                        name: keyword["KWType"],
-                      },
-                    },
-                    handicap: parseInt(keyword["Handicap"]),
-                  },
-                },
-              },
-              {
-                headers: {
-                  Cookie: `keystonejs-session=${sessionToken}`,
-                },
-              }
-            );
-          })();
-
-          keywordPromises.push(promise);
+          keywordPromises.push(limitedHandleKeywords(keyword));
         })
         .on("end", async () => {
           try {
@@ -390,7 +390,7 @@ async function soundExists(title, sessionToken) {
     return new Promise((resolve, reject) => {
       const keywordPromises = [];
 
-      const limitedHandleKeywords = throat(100, async (keyword) => {
+      const limitedHandleKeywords = throat(10, async (keyword) => {
         if (await keywordExists(keyword, sessionToken)) {
           // no need to update the keyword, because in Movies.csv, there is no handicap or kwType listed
           return;
@@ -454,7 +454,7 @@ async function soundExists(title, sessionToken) {
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
-      const limitedHandleMovie = throat(100, async (movie) => {
+      const limitedHandleMovie = throat(10, async (movie) => {
         const checkedMovie = await movieExists(
           movie["Title"],
           movie["Release Year"],
@@ -613,7 +613,8 @@ async function soundExists(title, sessionToken) {
 
     return new Promise((resolve, reject) => {
       const soundPromises = [];
-      const limitedHandleSound = throat(100, async (sound) => {
+
+      const limitedHandleSound = throat(10, async (sound) => {
         const checkedSound = await soundExists(sound["Name"], sessionToken);
         if (checkedSound) {
           // each row in Slopsounds.csv only has one slop associated with it
