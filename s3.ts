@@ -1,5 +1,4 @@
 require("dotenv").config();
-const fs = require("fs");
 const {
   S3Client,
   PutObjectCommand,
@@ -26,7 +25,6 @@ export const uploadFile = async (data: {
   movieTitle: string;
   movieImage: {
     path: string;
-    filename: string;
     mimetype: string;
     buffer: string;
   };
