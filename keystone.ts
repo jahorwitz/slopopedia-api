@@ -1,28 +1,14 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { TypeInfo, Context } from ".keystone/types";
-const multer = require("multer");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, req.body.movieTitle + "-" + uniqueSuffix);
-  },
-  //limit file size
-  //delete file image in system after file upload
-  //fs.unlink - look into this after successful upload
-});
-
-const upload = multer({ storage });
-
 import { uploadFile } from "./s3";
 dotenv.config();
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 export default withAuth(
   config<TypeInfo>({
@@ -35,85 +21,60 @@ export default withAuth(
         ],
       },
       maxFileSize: 200 * 1024 * 1024,
+
+      //custom endpoint used to upload movie images to S3 bucket
       extendExpressApp: (app, commonContext) => {
         app.post(
           "/api/movie",
           upload.single("movieImage"),
           async (req, res) => {
             const userId = req.body.userId;
-            const movieTitle = req.body.movieTitle;
-            const movieImage = req.body.movieImage;
+            //confirm userId exists in database
+            //probably need to use withAuth for this
+
             const fileData = {
               movieTitle: req.body.movieTitle,
               movieImage: req.file,
             };
-            console.log({ fileData });
 
             const s3upload = await uploadFile(fileData);
-            console.log(s3upload, "hello s3upload");
-            console.log(req.body, "hello keystone line 31");
+            console.log("s3upload", s3upload);
 
             //after calling upload file we call graphQL to insert movie into db
             //find keystone examples
 
-            const context = await commonContext.withRequest(req, res);
+            //const context = await commonContext.withRequest(req, res);
             //work on figuring out access issues from here
 
             //if (!context.session) return res.status(401).end()
             //const isDraft = req.query?.draft === "1";
-            const tasks = await context.query.Movie.createOne(
-              //gets us access to graphql
-              {
-                data: {
-                  author: {},
-                  title: "s3 upload test",
-                  description: "",
-                  releaseYear: null,
-                  runtime: null,
-                  photo: null,
-                  tomatoScore: null,
-                  howToWatch: "",
-
-                  keywords: {},
-                },
-              },
-            );
-            console.log(tasks);
+            // const tasks = await context.query.Movie.createOne(
+            //       //gets us access to graphql
+            //       {
+            //         data: {
+            //           author: {
+            //             connect: {
+            //               id: req.body.userId,
+            //               username: req.body.username
+            //             }
+            //           },
+            //           title: req.body.title,
+            //           description: req.body.description,
+            //           //releaseYear: req.body.releaseYear,
+            //           //runtime: req.body.runtime,
+            //           photo: null,
+            //           //tomatoScore: req.body.tomatoScore,
+            //           howToWatch: "",
+            //           keywords: {},
+            //         },
+            //       },
+            //     );
+            //     console.log(tasks);
 
             res.json({ success: true });
           },
         );
       },
-
-      // extendHttpServer: (server, commonContext) => {
-      //   // e.g
-      //   //   http://localhost:3000/rest/posts/clu7x6ch90002a89s6l63bjb5
-      //   //
-      //   server.on("request", async (req, res) => {
-      //     if (!req.url?.startsWith("/api/movie")) return;
-
-      //     // this example HTTP GET handler retrieves a post in the database for your context
-      //     //   returning it as JSON
-      //     const context = await commonContext.withRequest(req, res);
-      //     // if (!context.session) return res.status(401).end()
-
-      //     const task = await context.query.Movie.createOne({
-      //       where: {
-      //         id: req.url.slice("/api/movie".length),
-      //       },
-      //       //example only - will update for movie
-      //       query: `
-      //         id
-      //         title
-      //         content
-      //         draft
-      //       `,
-      //     });
-
-      //     if (!task) return res.writeHead(404).end();
-      //     res.writeHead(200).end(JSON.stringify(task));
-      //   });
-      // },
     },
     db: {
       provider: "mysql",
@@ -139,7 +100,6 @@ export default withAuth(
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "keystone",
         signed: { expiry: 5000 },
         forcePathStyle: true,
-        //endpoint: do i need this?
       },
       my_S3_sounds: {
         kind: "s3",

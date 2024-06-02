@@ -12,6 +12,7 @@ const S3_REGION = process.env.S3_REGION;
 const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID;
 const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY;
 
+//instantiating S3Client
 const s3 = new S3Client({
   region: S3_REGION,
   credentials: {
@@ -23,22 +24,29 @@ const s3 = new S3Client({
 //upload file to s3
 export const uploadFile = async (data: {
   movieTitle: string;
-  movieImage: { path: string; filename: string; mimetype: string };
+  movieImage: {
+    path: string;
+    filename: string;
+    mimetype: string;
+    buffer: string;
+  };
 }) => {
-  //export const uploadFile = async (image?: { path: any },) => {
-  const fileContent = fs.readFileSync(data.movieImage.path);
-  //console.log(fileContent, "hello fileContent")
-
-  console.log(data, "s3 hello");
-  //accept parameter that includes user submited formdata
-  //look into body containing image instead
+  //const fileContent = fs.readFileSync(data.movieImage.path);
+  //console.log("sup s3 - filename", data.movieImage.filename)
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const uniqueKey =
+    data.movieTitle +
+    "-" +
+    data.movieImage.mimetype.substring(6) +
+    "-" +
+    uniqueSuffix;
 
   // Put an object into an Amazon S3 bucket.
   const s3Upload = await s3.send(
     new PutObjectCommand({
       Bucket: S3_BUCKET_NAME,
-      Key: data.movieImage.filename, //needs proper extension (mimetype needs to match)
-      Body: fileContent,
+      Key: uniqueKey,
+      Body: data.movieImage.buffer,
       ContentType: data.movieImage.mimetype,
     }),
   );
