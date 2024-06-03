@@ -5,7 +5,6 @@ import { uploadFile } from "./s3";
 dotenv.config();
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
-//const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
