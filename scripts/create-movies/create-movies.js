@@ -7,9 +7,7 @@ const throat = require("throat");
 dotenv.config();
 
 const apiUri =
-  process.env.NODE_ENV === "production"
-    ? "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql"
-    : "http://localhost:8080/api/graphql";
+  process.env.PRODUCTION_DATABASE_URL ?? "http://localhost:8080/api/graphql";
 
 /* -------------------------------------------------------------------------- */
 /*                              helper functions                              */
@@ -283,7 +281,7 @@ async function soundExists(soundUrl, sessionToken) {
               (result) => result?.data?.data?.createKeywordType
             );
             console.log(
-              `Successfully parsed ${createdKeywordTypes.length} keywords!`
+              `Successfully parsed ${createdKeywordTypes.length} keyword types!`
             );
             resolve(createdKeywordTypes);
           } catch (error) {
@@ -483,7 +481,6 @@ async function soundExists(soundUrl, sessionToken) {
                   where: { id: checkedMovie.id },
                   data: {
                     description: movie["Description"],
-                    handicap: parseInt(movie["Handicap"]),
                     howToWatch: movie["Availability"],
                     releaseYear: parseInt(movie["Release Year"]),
                     runtime: parseInt(movie["Runtime"]),
@@ -532,7 +529,6 @@ async function soundExists(soundUrl, sessionToken) {
               variables: {
                 data: {
                   description: movie["Description"],
-                  handicap: parseInt(movie["Handicap"]),
                   howToWatch: movie["Availability"],
                   releaseYear: parseInt(movie["Release Year"]),
                   runtime: parseInt(movie["Runtime"]),

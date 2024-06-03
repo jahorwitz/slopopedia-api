@@ -7,7 +7,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `movie` MODIFY `description` TEXT NULL;
+ALTER TABLE `Movie` MODIFY `description` TEXT NULL;
 
 -- CreateIndex
 CREATE UNIQUE INDEX `Keyword_name_key` ON `Keyword`(`name`);
