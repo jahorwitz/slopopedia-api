@@ -1,10 +1,17 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
+import { getContext } from "@keystone-6/core/context";
+import * as PrismaModule from ".prisma/client";
+
+//const context = getContext(config, PrismaModule);
 import { TypeInfo, Context } from ".keystone/types";
+import { statelessSessions } from "@keystone-6/core/session";
 import { uploadFile } from "./s3";
 dotenv.config();
+import { User } from "./models";
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
+import { query } from "express";
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -28,17 +35,51 @@ export default withAuth(
           upload.single("movieImage"),
           async (req, res) => {
             const userId = req.body.userId;
-            //confirm userId exists in database
-            //probably need to use withAuth for this?
+            const context = await commonContext.withRequest(req, res);
+            // const confirmAuthorizedUser =  await context.query.User.findOne({
+            //   where: {id: userId},
+            //   query: "status"
+            // });
 
             const fileData = {
               movieTitle: req.body.movieTitle,
               movieImage: req.file,
             };
 
-            const s3upload = await uploadFile(fileData);
+            const userIsAuthorized = () => {
+              return context.query.User.findOne({
+                where: { id: userId },
+              })
+                .then((res) => {
+                  console.log("res", res);
+                  if (res === null) {
+                    return "false";
+                  } else {
+                    return "true";
+                  }
+                })
+                .catch(console.error);
+            };
 
-            res.json(s3upload);
+            const authResult = await userIsAuthorized();
+            console.log(authResult);
+
+            if (authResult === "true") {
+              const s3upload = await uploadFile(fileData);
+              res.json(s3upload);
+            } else {
+              res.json("User does not have authorization");
+            }
+
+            //res.json({success: true})
+
+            // const user = await context.query.Movie.createOne({
+            //   data: {
+            //     title: 'Alice',
+            //     posts: { create: [{ title: 'My first post' }] },
+            //   },
+            //   query: 'id name posts { id title }', //<== identifies what you want in response
+            // });
           },
         );
       },
