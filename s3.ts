@@ -24,18 +24,14 @@ const s3 = new S3Client({
 export const uploadFile = async (data: {
   movieTitle: string;
   movieImage: {
-    path: string;
-    mimetype: string;
     buffer: string;
+    originalname: string;
   };
 }) => {
+  //quick and dirty fix to pass correct image format to ContentType
+  const fileType = data.movieImage.originalname.slice(-4);
   const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const uniqueKey =
-    data.movieTitle +
-    "-" +
-    data.movieImage.mimetype.substring(6) +
-    "-" +
-    uniqueSuffix;
+  const uniqueKey = data.movieTitle + "-" + uniqueSuffix + fileType;
 
   // Put an object into an Amazon S3 bucket.
   const s3Upload = await s3.send(
@@ -43,7 +39,7 @@ export const uploadFile = async (data: {
       Bucket: S3_BUCKET_NAME,
       Key: uniqueKey,
       Body: data.movieImage.buffer,
-      ContentType: data.movieImage.mimetype,
+      ContentType: fileType,
     }),
   );
 
