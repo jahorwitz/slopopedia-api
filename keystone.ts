@@ -2,8 +2,6 @@ import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { getContext } from "@keystone-6/core/context";
 import * as PrismaModule from ".prisma/client";
-
-//const context = getContext(config, PrismaModule);
 import { TypeInfo, Context } from ".keystone/types";
 import { statelessSessions } from "@keystone-6/core/session";
 import { uploadFile } from "./s3";
@@ -36,11 +34,6 @@ export default withAuth(
           async (req, res) => {
             const userId = req.body.userId;
             const context = await commonContext.withRequest(req, res);
-            // const confirmAuthorizedUser =  await context.query.User.findOne({
-            //   where: {id: userId},
-            //   query: "status"
-            // });
-
             const fileData = {
               movieTitle: req.body.movieTitle,
               movieImage: req.file,
@@ -71,14 +64,14 @@ export default withAuth(
               res.json("User does not have authorization");
             }
 
-            //res.json({success: true})
-
-            // const user = await context.query.Movie.createOne({
+            // - - ***** if we want this endpoint to be responsible for
+            // - - ***** creating an entire slop, this might be where to start
+            // const movie = await context.query.Movie.createOne({
             //   data: {
-            //     title: 'Alice',
-            //     posts: { create: [{ title: 'My first post' }] },
+            //     title: 'movie title',
+            //     author:  - - - etc
             //   },
-            //   query: 'id name posts { id title }', //<== identifies what you want in response
+            //   query: 'id name posts { id title }', //<== identifies what fields you want in response
             // });
           },
         );
