@@ -43,5 +43,5 @@ export const uploadFile = async (data: {
     }),
   );
 
-  return s3Upload;
+  return { s3Upload, uniqueKey };
 };
