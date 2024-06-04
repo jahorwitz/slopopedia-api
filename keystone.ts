@@ -1,15 +1,10 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
-import { getContext } from "@keystone-6/core/context";
-import * as PrismaModule from ".prisma/client";
-import { TypeInfo, Context } from ".keystone/types";
-import { statelessSessions } from "@keystone-6/core/session";
+import { TypeInfo } from ".keystone/types";
 import { uploadFile } from "./s3";
 dotenv.config();
-import { User } from "./models";
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
-import { query } from "express";
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -44,7 +39,6 @@ export default withAuth(
                 where: { id: userId },
               })
                 .then((res) => {
-                  console.log("res", res);
                   if (res === null) {
                     return "false";
                   } else {
@@ -55,7 +49,6 @@ export default withAuth(
             };
 
             const authResult = await userIsAuthorized();
-            console.log(authResult);
 
             if (authResult === "true") {
               const s3upload = await uploadFile(fileData);
