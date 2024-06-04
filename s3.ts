@@ -5,6 +5,11 @@ const {
   //DeleteObjectCommand,
   //GetObjectCommand,
 } = require("@aws-sdk/client-s3");
+const { HttpRequest } = require("@smithy/protocol-http");
+const { formatUrl } = require("@aws-sdk/util-format-url");
+const { parseUrl } = require("@smithy/url-parser");
+const { S3RequestPresigner } = require("@aws-sdk/s3-request-presigner");
+const { Hash } = require("@smithy/hash-node");
 
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const S3_REGION = process.env.S3_REGION;
@@ -45,3 +50,26 @@ export const uploadFile = async (data: {
 
   return { s3Upload, uniqueKey };
 };
+
+export async function createPresignedUrl({ region, bucket, key }) {
+  const url = parseUrl(`https://${bucket}.s3.${region}.amazonaws.com/${key}`);
+  const presigner = new S3RequestPresigner({
+    credentials: {
+      accessKeyId: S3_ACCESS_KEY_ID,
+      secretAccessKey: S3_SECRET_ACCESS_KEY,
+    },
+    region,
+    sha256: Hash.bind(null, "sha256"),
+  });
+
+  const signedUrlObject = await presigner.presign(new HttpRequest(url));
+  return formatUrl(signedUrlObject);
+}
+export async function getUrl({ key }) {
+  const url = await createPresignedUrl({
+    region: S3_REGION,
+    bucket: S3_BUCKET_NAME,
+    key: key,
+  });
+  return url;
+}
