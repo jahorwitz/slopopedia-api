@@ -343,6 +343,7 @@ type Keyword {
 
 input KeywordWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordWhereInput {
@@ -433,6 +434,7 @@ type KeywordType {
 
 input KeywordTypeWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordTypeWhereInput {
@@ -492,13 +494,13 @@ type Movie {
   photo: ImageFieldOutput
   tomatoScore: Int
   howToWatch: String
-  handicap: Int
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
   sounds(where: SoundWhereInput! = {}, orderBy: [SoundOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SoundWhereUniqueInput): [Sound!]
   soundsCount(where: SoundWhereInput! = {}): Int
   keywords(where: KeywordWhereInput! = {}, orderBy: [KeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: KeywordWhereUniqueInput): [Keyword!]
   keywordsCount(where: KeywordWhereInput! = {}): Int
+  handicap: Int
   status: String
 }
 
@@ -529,22 +531,15 @@ input MovieWhereInput {
   id: IDFilter
   author: UserWhereInput
   title: StringFilter
-  description: StringFilter
+  description: StringNullableFilter
   releaseYear: IntNullableFilter
   runtime: IntNullableFilter
   tomatoScore: IntNullableFilter
   howToWatch: StringFilter
-  handicap: IntNullableFilter
   posts: PostManyRelationFilter
   sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
-}
-
-input SoundManyRelationFilter {
-  every: SoundWhereInput
-  some: SoundWhereInput
-  none: SoundWhereInput
 }
 
 input StringNullableFilter {
@@ -561,6 +556,12 @@ input StringNullableFilter {
   not: StringNullableFilter
 }
 
+input SoundManyRelationFilter {
+  every: SoundWhereInput
+  some: SoundWhereInput
+  none: SoundWhereInput
+}
+
 input MovieOrderByInput {
   id: OrderDirection
   title: OrderDirection
@@ -569,7 +570,6 @@ input MovieOrderByInput {
   runtime: OrderDirection
   tomatoScore: OrderDirection
   howToWatch: OrderDirection
-  handicap: OrderDirection
   status: OrderDirection
 }
 
@@ -582,7 +582,6 @@ input MovieUpdateInput {
   photo: ImageFieldInput
   tomatoScore: Int
   howToWatch: String
-  handicap: Int
   posts: PostRelateToManyForUpdateInput
   sounds: SoundRelateToManyForUpdateInput
   keywords: KeywordRelateToManyForUpdateInput
@@ -617,7 +616,6 @@ input MovieCreateInput {
   photo: ImageFieldInput
   tomatoScore: Int
   howToWatch: String
-  handicap: Int
   posts: PostRelateToManyForCreateInput
   sounds: SoundRelateToManyForCreateInput
   keywords: KeywordRelateToManyForCreateInput
@@ -787,6 +785,7 @@ type Sound {
 
 input SoundWhereUniqueInput {
   id: ID
+  audio: String
 }
 
 input SoundWhereInput {

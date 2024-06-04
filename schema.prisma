@@ -54,7 +54,7 @@ model FestVote {
 
 model Keyword {
   id            String       @id @default(uuid())
-  name          String       @default("")
+  name          String       @unique @default("")
   handicap      Int?         @default(0)
   keywordType   KeywordType? @relation("Keyword_keywordType", fields: [keywordTypeId], references: [id])
   keywordTypeId String?      @map("keywordType")
@@ -66,7 +66,7 @@ model Keyword {
 
 model KeywordType {
   id       String    @id @default(uuid())
-  name     String    @default("")
+  name     String    @unique @default("")
   keywords Keyword[] @relation("Keyword_keywordType")
 }
 
@@ -75,7 +75,7 @@ model Movie {
   author              User?      @relation("Movie_author", fields: [authorId], references: [id])
   authorId            String?    @map("author")
   title               String     @default("")
-  description         String     @default("")
+  description         String?    @mysql.Text
   releaseYear         Int?       @default(1970)
   runtime             Int?       @default(0)
   photo_filesize      Int?
@@ -85,7 +85,6 @@ model Movie {
   photo_id            String?
   tomatoScore         Int?       @default(0)
   howToWatch          String     @default("")
-  handicap            Int?       @default(0)
   posts               Post[]     @relation("Movie_posts")
   sounds              Sound[]    @relation("Movie_sounds")
   keywords            Keyword[]  @relation("Keyword_movies")
@@ -134,7 +133,7 @@ model Sound {
   photo_height    Int?
   photo_id        String?
   movies          Movie[] @relation("Movie_sounds")
-  audio           String  @default("")
+  audio           String  @unique @default("")
 }
 
 model User {
