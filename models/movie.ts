@@ -51,7 +51,10 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
       many: false,
     }),
     title: text({ validation: { isRequired: true } }),
-    description: text({ validation: { isRequired: true } }),
+    description: text({
+      validation: { isRequired: true },
+      db: { nativeType: "Text", isNullable: true },
+    }),
     releaseYear: integer({ defaultValue: 1970 }),
     runtime: integer({
       defaultValue: 0,

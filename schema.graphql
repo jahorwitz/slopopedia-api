@@ -343,6 +343,7 @@ type Keyword {
 
 input KeywordWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordWhereInput {
@@ -433,6 +434,7 @@ type KeywordType {
 
 input KeywordTypeWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordTypeWhereInput {
@@ -529,7 +531,7 @@ input MovieWhereInput {
   id: IDFilter
   author: UserWhereInput
   title: StringFilter
-  description: StringFilter
+  description: StringNullableFilter
   releaseYear: IntNullableFilter
   runtime: IntNullableFilter
   tomatoScore: IntNullableFilter
@@ -538,12 +540,6 @@ input MovieWhereInput {
   sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
-}
-
-input SoundManyRelationFilter {
-  every: SoundWhereInput
-  some: SoundWhereInput
-  none: SoundWhereInput
 }
 
 input StringNullableFilter {
@@ -558,6 +554,12 @@ input StringNullableFilter {
   startsWith: String
   endsWith: String
   not: StringNullableFilter
+}
+
+input SoundManyRelationFilter {
+  every: SoundWhereInput
+  some: SoundWhereInput
+  none: SoundWhereInput
 }
 
 input MovieOrderByInput {
@@ -783,6 +785,7 @@ type Sound {
 
 input SoundWhereUniqueInput {
   id: ID
+  audio: String
 }
 
 input SoundWhereInput {
