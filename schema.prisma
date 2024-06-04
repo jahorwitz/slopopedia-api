@@ -100,7 +100,7 @@ model Movie {
 model Post {
   id              String    @id @default(uuid())
   title           String    @default("")
-  content         String    @default("")
+  content         String?   @mysql.Text
   photo_filesize  Int?
   photo_extension String?
   photo_width     Int?
