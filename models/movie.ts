@@ -3,13 +3,13 @@ import type { ListConfig } from "@keystone-6/core";
 import {
   text,
   integer,
-  image,
   relationship,
   select,
   virtual,
 } from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
 import { graphql } from "@graphql-ts/schema";
+import { getUrl } from "../s3";
 
 export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
   access: {
@@ -59,7 +59,16 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
         description: "Enter the runtime in minutes",
       },
     }),
-    photo: image({ storage: "my_S3_images" }),
+    imageKey: text(),
+    imageUrl: virtual({
+      field: graphql.field({
+        type: graphql.String,
+        async resolve(item, args, context) {
+          const url = await getUrl({ key: item.imageKey });
+          return url;
+        },
+      }),
+    }),
     tomatoScore: integer({
       defaultValue: 0,
       ui: {
