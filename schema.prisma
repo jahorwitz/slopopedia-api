@@ -78,11 +78,7 @@ model Movie {
   description         String     @default("")
   releaseYear         Int?       @default(1970)
   runtime             Int?       @default(0)
-  photo_filesize      Int?
-  photo_extension     String?
-  photo_width         Int?
-  photo_height        Int?
-  photo_id            String?
+  imageKey            String     @default("")
   tomatoScore         Int?       @default(0)
   howToWatch          String     @default("")
   posts               Post[]     @relation("Movie_posts")

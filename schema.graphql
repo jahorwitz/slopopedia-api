@@ -489,7 +489,8 @@ type Movie {
   description: String
   releaseYear: Int
   runtime: Int
-  photo: ImageFieldOutput
+  imageKey: String
+  imageUrl: String
   tomatoScore: Int
   howToWatch: String
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
@@ -500,22 +501,6 @@ type Movie {
   keywordsCount(where: KeywordWhereInput! = {}): Int
   handicap: Int
   status: String
-}
-
-type ImageFieldOutput {
-  id: ID!
-  filesize: Int!
-  width: Int!
-  height: Int!
-  extension: ImageExtension!
-  url: String!
-}
-
-enum ImageExtension {
-  jpg
-  png
-  webp
-  gif
 }
 
 input MovieWhereUniqueInput {
@@ -532,6 +517,7 @@ input MovieWhereInput {
   description: StringFilter
   releaseYear: IntNullableFilter
   runtime: IntNullableFilter
+  imageKey: StringFilter
   tomatoScore: IntNullableFilter
   howToWatch: StringFilter
   posts: PostManyRelationFilter
@@ -566,6 +552,7 @@ input MovieOrderByInput {
   description: OrderDirection
   releaseYear: OrderDirection
   runtime: OrderDirection
+  imageKey: OrderDirection
   tomatoScore: OrderDirection
   howToWatch: OrderDirection
   status: OrderDirection
@@ -577,7 +564,7 @@ input MovieUpdateInput {
   description: String
   releaseYear: Int
   runtime: Int
-  photo: ImageFieldInput
+  imageKey: String
   tomatoScore: Int
   howToWatch: String
   posts: PostRelateToManyForUpdateInput
@@ -585,13 +572,6 @@ input MovieUpdateInput {
   keywords: KeywordRelateToManyForUpdateInput
   status: String
 }
-
-input ImageFieldInput {
-  upload: Upload!
-}
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input SoundRelateToManyForUpdateInput {
   disconnect: [SoundWhereUniqueInput!]
@@ -611,7 +591,7 @@ input MovieCreateInput {
   description: String
   releaseYear: Int
   runtime: Int
-  photo: ImageFieldInput
+  imageKey: String
   tomatoScore: Int
   howToWatch: String
   posts: PostRelateToManyForCreateInput
@@ -637,6 +617,22 @@ type Post {
   keywordsCount(where: KeywordWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
+}
+
+type ImageFieldOutput {
+  id: ID!
+  filesize: Int!
+  width: Int!
+  height: Int!
+  extension: ImageExtension!
+  url: String!
+}
+
+enum ImageExtension {
+  jpg
+  png
+  webp
+  gif
 }
 
 input PostWhereUniqueInput {
@@ -675,6 +671,13 @@ input PostUpdateInput {
   keywords: KeywordRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
 }
+
+input ImageFieldInput {
+  upload: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input PostUpdateArgs {
   where: PostWhereUniqueInput!

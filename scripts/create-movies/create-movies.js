@@ -8,7 +8,7 @@ dotenv.config();
 (async () => {
   const keywordsFile = readFileSync(
     "./scripts/create-movies/Keywords.csv",
-    "utf8"
+    "utf8",
   );
   const [, ...lines] = keywordsFile.split("\n");
 
@@ -19,10 +19,8 @@ dotenv.config();
         authenticateUserWithPassword: { sessionToken },
       },
     },
-  } = await axios.post(
-    "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
-    {
-      query: `
+  } = await axios.post("http://localhost:8080/api/graphql", {
+    query: `
         mutation Mutation($username: String!, $password: String!) {
           authenticateUserWithPassword(username: $username, password: $password) {
             ... on UserAuthenticationWithPasswordSuccess {
@@ -31,12 +29,11 @@ dotenv.config();
           }
         }
       `,
-      variables: {
-        username: process.env.ADMIN_PANEL_USERNAME,
-        password: process.env.ADMIN_PANEL_PASSWORD,
-      },
-    }
-  );
+    variables: {
+      username: process.env.ADMIN_PANEL_USERNAME,
+      password: process.env.ADMIN_PANEL_PASSWORD,
+    },
+  });
 
   const allKeywords = [];
 
@@ -51,7 +48,7 @@ dotenv.config();
       data: { createKeywords: createdKeywords },
     },
   } = await axios.post(
-    "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
+    "http://localhost:8080/api/graphql",
     {
       query: `
       mutation CreateKeywords($data: [KeywordCreateInput!]!) {
@@ -69,7 +66,7 @@ dotenv.config();
       headers: {
         Cookie: `keystonejs-session=${sessionToken}`,
       },
-    }
+    },
   );
 
   const rows = [];
@@ -80,7 +77,7 @@ dotenv.config();
       const results = await Promise.all(
         rows.map((movie) =>
           axios.post(
-            "https://slopopedia-api-a5fe9aef64e8.herokuapp.com/api/graphql",
+            "http://localhost:8080/api/graphql",
             {
               query: `
             mutation Mutation($data: MovieCreateInput!) {
@@ -105,8 +102,8 @@ dotenv.config();
                             .split(",")
                             .map((x) =>
                               createdKeywords.find(
-                                (keyword) => keyword.name === x.trim()
-                              )
+                                (keyword) => keyword.name === x.trim(),
+                              ),
                             )
                             .filter((x) => !!x)
                             .map((keyword) => ({ id: keyword.id })),
@@ -115,8 +112,8 @@ dotenv.config();
                             .filter(
                               (x) =>
                                 !createdKeywords.some(
-                                  (keyword) => keyword.name === x.trim()
-                                )
+                                  (keyword) => keyword.name === x.trim(),
+                                ),
                             )
                             .map((x) => ({ name: x.trim() })),
                         },
@@ -129,9 +126,9 @@ dotenv.config();
               headers: {
                 Cookie: `keystonejs-session=${sessionToken}`,
               },
-            }
-          )
-        )
+            },
+          ),
+        ),
       );
 
       console.log(`Successfully created ${results.length} movies!`);

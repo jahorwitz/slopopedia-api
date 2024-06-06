@@ -38,7 +38,20 @@ CREATE TABLE `FestVote` (
 CREATE TABLE `Keyword` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL DEFAULT '',
+    `handicap` INTEGER NULL DEFAULT 0,
+    `keywordType` VARCHAR(191) NULL,
 
+    UNIQUE INDEX `Keyword_name_key`(`name`),
+    INDEX `Keyword_keywordType_idx`(`keywordType`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `KeywordType` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL DEFAULT '',
+
+    UNIQUE INDEX `KeywordType_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -47,7 +60,7 @@ CREATE TABLE `Movie` (
     `id` VARCHAR(191) NOT NULL,
     `author` VARCHAR(191) NULL,
     `title` VARCHAR(191) NOT NULL DEFAULT '',
-    `description` VARCHAR(191) NOT NULL DEFAULT '',
+    `description` TEXT NULL,
     `releaseYear` INTEGER NULL DEFAULT 1970,
     `runtime` INTEGER NULL DEFAULT 0,
     `photo_filesize` INTEGER NULL,
@@ -57,8 +70,7 @@ CREATE TABLE `Movie` (
     `photo_id` VARCHAR(191) NULL,
     `tomatoScore` INTEGER NULL DEFAULT 0,
     `howToWatch` VARCHAR(191) NOT NULL DEFAULT '',
-    `handicap` INTEGER NULL DEFAULT 0,
-    `status` VARCHAR(191) NULL,
+    `status` VARCHAR(191) NULL DEFAULT 'draft',
 
     INDEX `Movie_author_idx`(`author`),
     PRIMARY KEY (`id`)
@@ -68,7 +80,7 @@ CREATE TABLE `Movie` (
 CREATE TABLE `Post` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL DEFAULT '',
-    `content` VARCHAR(191) NOT NULL DEFAULT '',
+    `content` TEXT NULL,
     `photo_filesize` INTEGER NULL,
     `photo_extension` VARCHAR(191) NULL,
     `photo_width` INTEGER NULL,
@@ -89,6 +101,21 @@ CREATE TABLE `Preference` (
     `name` VARCHAR(191) NOT NULL DEFAULT '',
     `type` ENUM('radio', 'integer') NOT NULL DEFAULT 'radio',
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Sound` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL DEFAULT '',
+    `photo_filesize` INTEGER NULL,
+    `photo_extension` VARCHAR(191) NULL,
+    `photo_width` INTEGER NULL,
+    `photo_height` INTEGER NULL,
+    `photo_id` VARCHAR(191) NULL,
+    `audio` VARCHAR(191) NOT NULL DEFAULT '',
+
+    UNIQUE INDEX `Sound_audio_key`(`audio`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -184,6 +211,15 @@ CREATE TABLE `_Movie_posts` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `_Movie_sounds` (
+    `A` VARCHAR(191) NOT NULL,
+    `B` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `_Movie_sounds_AB_unique`(`A`, `B`),
+    INDEX `_Movie_sounds_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `_User_wishlist` (
     `A` VARCHAR(191) NOT NULL,
     `B` VARCHAR(191) NOT NULL,
@@ -215,6 +251,9 @@ ALTER TABLE `FestVote` ADD CONSTRAINT `FestVote_user_fkey` FOREIGN KEY (`user`) 
 
 -- AddForeignKey
 ALTER TABLE `FestVote` ADD CONSTRAINT `FestVote_fest_fkey` FOREIGN KEY (`fest`) REFERENCES `Fest`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Keyword` ADD CONSTRAINT `Keyword_keywordType_fkey` FOREIGN KEY (`keywordType`) REFERENCES `KeywordType`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Movie` ADD CONSTRAINT `Movie_author_fkey` FOREIGN KEY (`author`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -269,6 +308,12 @@ ALTER TABLE `_Movie_posts` ADD CONSTRAINT `_Movie_posts_A_fkey` FOREIGN KEY (`A`
 
 -- AddForeignKey
 ALTER TABLE `_Movie_posts` ADD CONSTRAINT `_Movie_posts_B_fkey` FOREIGN KEY (`B`) REFERENCES `Post`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_Movie_sounds` ADD CONSTRAINT `_Movie_sounds_A_fkey` FOREIGN KEY (`A`) REFERENCES `Movie`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_Movie_sounds` ADD CONSTRAINT `_Movie_sounds_B_fkey` FOREIGN KEY (`B`) REFERENCES `Sound`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_User_wishlist` ADD CONSTRAINT `_User_wishlist_A_fkey` FOREIGN KEY (`A`) REFERENCES `Movie`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
