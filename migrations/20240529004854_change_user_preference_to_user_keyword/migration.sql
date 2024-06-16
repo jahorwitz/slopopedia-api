@@ -5,16 +5,16 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `userpreference` DROP FOREIGN KEY `UserPreference_preference_fkey`;
+ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_preference_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `userpreference` DROP FOREIGN KEY `UserPreference_user_fkey`;
+ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_user_fkey`;
 
 -- DropTable
-DROP TABLE `preference`;
+DROP TABLE `Preference`;
 
 -- ChangeTableName
-ALTER TABLE `userpreference` RENAME TO `userkeyword`;
+ALTER TABLE `UserPreference` RENAME TO `userkeyword`;
 
 -- ChangeColumnName
 ALTER TABLE `UserKeyword` RENAME COLUMN `preference` TO `keyword`;
