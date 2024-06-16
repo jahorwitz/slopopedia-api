@@ -41,6 +41,7 @@ export const Post: ListConfig<Lists.Post.TypeInfo<any>, any> = list({
 
     content: text({
       validation: { isRequired: true },
+      db: { nativeType: "Text", isNullable: true },
       ui: {
         displayMode: "textarea",
       },

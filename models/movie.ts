@@ -6,8 +6,10 @@ import {
   image,
   relationship,
   select,
+  virtual,
 } from "@keystone-6/core/fields";
 import type { Lists } from ".keystone/types";
+import { graphql } from "@graphql-ts/schema";
 
 export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
   access: {
@@ -49,7 +51,10 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
       many: false,
     }),
     title: text({ validation: { isRequired: true } }),
-    description: text({ validation: { isRequired: true } }),
+    description: text({
+      validation: { isRequired: true },
+      db: { nativeType: "Text", isNullable: true },
+    }),
     releaseYear: integer({ defaultValue: 1970 }),
     runtime: integer({
       defaultValue: 0,
@@ -65,11 +70,26 @@ export const Movie: ListConfig<Lists.Movie.TypeInfo<any>, any> = list({
       },
     }),
     howToWatch: text(),
-    handicap: integer({ defaultValue: 0 }),
-
     posts: relationship({ ref: "Post.movies", many: true }),
     sounds: relationship({ ref: "Sound.movies", many: true }),
     keywords: relationship({ ref: "Keyword.movies", many: true }),
+    handicap: virtual({
+      field: graphql.field({
+        type: graphql.Int,
+        async resolve(item, args, context) {
+          //@ts-ignore
+          const { keywords } = await context.query.Movie.findOne({
+            where: { id: item.id.toString() },
+            query: "keywords { handicap }",
+          });
+          let totalHandicap = 0;
+          for (let i = 0; i < keywords.length; i++) {
+            totalHandicap += keywords[i].handicap;
+          }
+          return totalHandicap;
+        },
+      }),
+    }),
     status: select({
       options: [
         { label: "Published", value: "published" },

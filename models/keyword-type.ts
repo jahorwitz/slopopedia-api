@@ -11,7 +11,7 @@ export const KeywordType = list({
     },
   },
   fields: {
-    name: text({ validation: { isRequired: true } }),
+    name: text({ validation: { isRequired: true }, isIndexed: "unique" }),
     keywords: relationship({ ref: "Keyword.keywordType", many: true }),
   },
 });
