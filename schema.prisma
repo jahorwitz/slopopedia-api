@@ -53,13 +53,14 @@ model FestVote {
 }
 
 model Keyword {
-  id            String       @id @default(uuid())
-  name          String       @unique @default("")
-  handicap      Int?         @default(0)
-  keywordType   KeywordType? @relation("Keyword_keywordType", fields: [keywordTypeId], references: [id])
-  keywordTypeId String?      @map("keywordType")
-  posts         Post[]       @relation("Keyword_posts")
-  movies        Movie[]      @relation("Keyword_movies")
+  id            String        @id @default(uuid())
+  name          String        @unique @default("")
+  handicap      Int?          @default(0)
+  keywordType   KeywordType?  @relation("Keyword_keywordType", fields: [keywordTypeId], references: [id])
+  keywordTypeId String?       @map("keywordType")
+  posts         Post[]        @relation("Keyword_posts")
+  movies        Movie[]       @relation("Keyword_movies")
+  userKeyword   UserKeyword[] @relation("UserKeyword_keyword")
 
   @@index([keywordTypeId])
 }
