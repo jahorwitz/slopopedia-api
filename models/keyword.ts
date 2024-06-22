@@ -18,5 +18,9 @@ export const Keyword: ListConfig<Lists.Keyword.TypeInfo<any>, any> = list({
     keywordType: relationship({ ref: "KeywordType.keywords", many: false }),
     posts: relationship({ ref: "Post.keywords", many: true }),
     movies: relationship({ ref: "Movie.keywords", many: true }),
+    userKeyword: relationship({
+      ref: "UserKeyword.keyword",
+      many: true,
+    }),
   },
 });

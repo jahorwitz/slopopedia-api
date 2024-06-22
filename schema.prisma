@@ -53,13 +53,14 @@ model FestVote {
 }
 
 model Keyword {
-  id            String       @id @default(uuid())
-  name          String       @unique @default("")
-  handicap      Int?         @default(0)
-  keywordType   KeywordType? @relation("Keyword_keywordType", fields: [keywordTypeId], references: [id])
-  keywordTypeId String?      @map("keywordType")
-  posts         Post[]       @relation("Keyword_posts")
-  movies        Movie[]      @relation("Keyword_movies")
+  id            String        @id @default(uuid())
+  name          String        @unique @default("")
+  handicap      Int?          @default(0)
+  keywordType   KeywordType?  @relation("Keyword_keywordType", fields: [keywordTypeId], references: [id])
+  keywordTypeId String?       @map("keywordType")
+  posts         Post[]        @relation("Keyword_posts")
+  movies        Movie[]       @relation("Keyword_movies")
+  userKeyword   UserKeyword[] @relation("UserKeyword_keyword")
 
   @@index([keywordTypeId])
 }
@@ -116,14 +117,6 @@ model Post {
   @@index([authorId])
 }
 
-model Preference {
-  id             String             @id @default(uuid())
-  category       Int?
-  name           String             @default("")
-  type           PreferenceTypeType @default(radio)
-  userPreference UserPreference[]   @relation("UserPreference_preference")
-}
-
 model Sound {
   id              String  @id @default(uuid())
   title           String  @default("")
@@ -137,39 +130,34 @@ model Sound {
 }
 
 model User {
-  id            String           @id @default(uuid())
-  username      String           @unique @default("")
-  email         String           @unique @default("")
+  id            String        @id @default(uuid())
+  username      String        @unique @default("")
+  email         String        @unique @default("")
   password      String
-  status        String?          @default("active")
-  isAdmin       Boolean          @default(false)
-  posts         Post[]           @relation("Post_author")
-  movies        Movie[]          @relation("Movie_author")
-  wishlist      Movie[]          @relation("User_wishlist")
-  watched       Movie[]          @relation("User_watched")
-  preferences   UserPreference[] @relation("UserPreference_user")
-  myFests       Fest[]           @relation("Fest_creator")
-  festAttendees Fest[]           @relation("Fest_attendees")
-  festInvitees  Fest[]           @relation("Fest_invitees")
-  festVotes     FestVote[]       @relation("FestVote_user")
-  festNotes     FestNote[]       @relation("FestNote_user")
-  createdAt     DateTime?        @default(now())
-  lastLoginDate DateTime?        @default(now())
+  status        String?       @default("active")
+  isAdmin       Boolean       @default(false)
+  posts         Post[]        @relation("Post_author")
+  movies        Movie[]       @relation("Movie_author")
+  wishlist      Movie[]       @relation("User_wishlist")
+  watched       Movie[]       @relation("User_watched")
+  keywords      UserKeyword[] @relation("UserKeyword_user")
+  myFests       Fest[]        @relation("Fest_creator")
+  festAttendees Fest[]        @relation("Fest_attendees")
+  festInvitees  Fest[]        @relation("Fest_invitees")
+  festVotes     FestVote[]    @relation("FestVote_user")
+  festNotes     FestNote[]    @relation("FestNote_user")
+  createdAt     DateTime?     @default(now())
+  lastLoginDate DateTime?     @default(now())
 }
 
-model UserPreference {
-  id           String      @id @default(uuid())
-  user         User?       @relation("UserPreference_user", fields: [userId], references: [id])
-  userId       String?     @map("user")
-  preference   Preference? @relation("UserPreference_preference", fields: [preferenceId], references: [id])
-  preferenceId String?     @map("preference")
-  value        Int
+model UserKeyword {
+  id        String   @id @default(uuid())
+  user      User?    @relation("UserKeyword_user", fields: [userId], references: [id])
+  userId    String?  @map("user")
+  keyword   Keyword? @relation("UserKeyword_keyword", fields: [keywordId], references: [id])
+  keywordId String?  @map("keyword")
+  value     Int
 
   @@index([userId])
-  @@index([preferenceId])
-}
-
-enum PreferenceTypeType {
-  radio
-  integer
+  @@index([keywordId])
 }

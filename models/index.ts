@@ -5,7 +5,6 @@ export * from "./keyword";
 export * from "./keyword-type";
 export * from "./movie";
 export * from "./post";
-export * from "./preference";
 export * from "./sound";
 export * from "./user";
-export * from "./user-preference";
+export * from "./user-keyword";
