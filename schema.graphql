@@ -339,10 +339,13 @@ type Keyword {
   postsCount(where: PostWhereInput! = {}): Int
   movies(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   moviesCount(where: MovieWhereInput! = {}): Int
+  userKeyword(where: UserKeywordWhereInput! = {}, orderBy: [UserKeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserKeywordWhereUniqueInput): [UserKeyword!]
+  userKeywordCount(where: UserKeywordWhereInput! = {}): Int
 }
 
 input KeywordWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordWhereInput {
@@ -355,6 +358,7 @@ input KeywordWhereInput {
   keywordType: KeywordTypeWhereInput
   posts: PostManyRelationFilter
   movies: MovieManyRelationFilter
+  userKeyword: UserKeywordManyRelationFilter
 }
 
 input IntNullableFilter {
@@ -374,6 +378,12 @@ input PostManyRelationFilter {
   none: PostWhereInput
 }
 
+input UserKeywordManyRelationFilter {
+  every: UserKeywordWhereInput
+  some: UserKeywordWhereInput
+  none: UserKeywordWhereInput
+}
+
 input KeywordOrderByInput {
   id: OrderDirection
   name: OrderDirection
@@ -386,6 +396,7 @@ input KeywordUpdateInput {
   keywordType: KeywordTypeRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
   movies: MovieRelateToManyForUpdateInput
+  userKeyword: UserKeywordRelateToManyForUpdateInput
 }
 
 input KeywordTypeRelateToOneForUpdateInput {
@@ -401,6 +412,13 @@ input PostRelateToManyForUpdateInput {
   connect: [PostWhereUniqueInput!]
 }
 
+input UserKeywordRelateToManyForUpdateInput {
+  disconnect: [UserKeywordWhereUniqueInput!]
+  set: [UserKeywordWhereUniqueInput!]
+  create: [UserKeywordCreateInput!]
+  connect: [UserKeywordWhereUniqueInput!]
+}
+
 input KeywordUpdateArgs {
   where: KeywordWhereUniqueInput!
   data: KeywordUpdateInput!
@@ -412,6 +430,7 @@ input KeywordCreateInput {
   keywordType: KeywordTypeRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
   movies: MovieRelateToManyForCreateInput
+  userKeyword: UserKeywordRelateToManyForCreateInput
 }
 
 input KeywordTypeRelateToOneForCreateInput {
@@ -424,6 +443,11 @@ input PostRelateToManyForCreateInput {
   connect: [PostWhereUniqueInput!]
 }
 
+input UserKeywordRelateToManyForCreateInput {
+  create: [UserKeywordCreateInput!]
+  connect: [UserKeywordWhereUniqueInput!]
+}
+
 type KeywordType {
   id: ID!
   name: String
@@ -433,6 +457,7 @@ type KeywordType {
 
 input KeywordTypeWhereUniqueInput {
   id: ID
+  name: String
 }
 
 input KeywordTypeWhereInput {
@@ -514,7 +539,7 @@ input MovieWhereInput {
   id: IDFilter
   author: UserWhereInput
   title: StringFilter
-  description: StringFilter
+  description: StringNullableFilter
   releaseYear: IntNullableFilter
   runtime: IntNullableFilter
   imageKey: StringFilter
@@ -524,12 +549,6 @@ input MovieWhereInput {
   sounds: SoundManyRelationFilter
   keywords: KeywordManyRelationFilter
   status: StringNullableFilter
-}
-
-input SoundManyRelationFilter {
-  every: SoundWhereInput
-  some: SoundWhereInput
-  none: SoundWhereInput
 }
 
 input StringNullableFilter {
@@ -544,6 +563,12 @@ input StringNullableFilter {
   startsWith: String
   endsWith: String
   not: StringNullableFilter
+}
+
+input SoundManyRelationFilter {
+  every: SoundWhereInput
+  some: SoundWhereInput
+  none: SoundWhereInput
 }
 
 input MovieOrderByInput {
@@ -645,7 +670,7 @@ input PostWhereInput {
   NOT: [PostWhereInput!]
   id: IDFilter
   title: StringFilter
-  content: StringFilter
+  content: StringNullableFilter
   author: UserWhereInput
   createdAt: DateTimeNullableFilter
   status: StringNullableFilter
@@ -695,86 +720,6 @@ input PostCreateInput {
   movies: MovieRelateToManyForCreateInput
 }
 
-type Preference {
-  id: ID!
-  category: Int
-  name: String
-  type: PreferenceTypeType
-  userPreference(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
-  userPreferenceCount(where: UserPreferenceWhereInput! = {}): Int
-}
-
-enum PreferenceTypeType {
-  radio
-  integer
-}
-
-input PreferenceWhereUniqueInput {
-  id: ID
-}
-
-input PreferenceWhereInput {
-  AND: [PreferenceWhereInput!]
-  OR: [PreferenceWhereInput!]
-  NOT: [PreferenceWhereInput!]
-  id: IDFilter
-  category: IntNullableFilter
-  name: StringFilter
-  type: PreferenceTypeTypeNullableFilter
-  userPreference: UserPreferenceManyRelationFilter
-}
-
-input PreferenceTypeTypeNullableFilter {
-  equals: PreferenceTypeType
-  in: [PreferenceTypeType!]
-  notIn: [PreferenceTypeType!]
-  not: PreferenceTypeTypeNullableFilter
-}
-
-input UserPreferenceManyRelationFilter {
-  every: UserPreferenceWhereInput
-  some: UserPreferenceWhereInput
-  none: UserPreferenceWhereInput
-}
-
-input PreferenceOrderByInput {
-  id: OrderDirection
-  category: OrderDirection
-  name: OrderDirection
-  type: OrderDirection
-}
-
-input PreferenceUpdateInput {
-  category: Int
-  name: String
-  type: PreferenceTypeType
-  userPreference: UserPreferenceRelateToManyForUpdateInput
-}
-
-input UserPreferenceRelateToManyForUpdateInput {
-  disconnect: [UserPreferenceWhereUniqueInput!]
-  set: [UserPreferenceWhereUniqueInput!]
-  create: [UserPreferenceCreateInput!]
-  connect: [UserPreferenceWhereUniqueInput!]
-}
-
-input PreferenceUpdateArgs {
-  where: PreferenceWhereUniqueInput!
-  data: PreferenceUpdateInput!
-}
-
-input PreferenceCreateInput {
-  category: Int
-  name: String
-  type: PreferenceTypeType
-  userPreference: UserPreferenceRelateToManyForCreateInput
-}
-
-input UserPreferenceRelateToManyForCreateInput {
-  create: [UserPreferenceCreateInput!]
-  connect: [UserPreferenceWhereUniqueInput!]
-}
-
 type Sound {
   id: ID!
   title: String
@@ -786,6 +731,7 @@ type Sound {
 
 input SoundWhereUniqueInput {
   id: ID
+  audio: String
 }
 
 input SoundWhereInput {
@@ -838,8 +784,8 @@ type User {
   wishlistCount(where: MovieWhereInput! = {}): Int
   watched(where: MovieWhereInput! = {}, orderBy: [MovieOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: MovieWhereUniqueInput): [Movie!]
   watchedCount(where: MovieWhereInput! = {}): Int
-  preferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
-  preferencesCount(where: UserPreferenceWhereInput! = {}): Int
+  keywords(where: UserKeywordWhereInput! = {}, orderBy: [UserKeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserKeywordWhereUniqueInput): [UserKeyword!]
+  keywordsCount(where: UserKeywordWhereInput! = {}): Int
   myFests(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
   myFestsCount(where: FestWhereInput! = {}): Int
   festAttendees(where: FestWhereInput! = {}, orderBy: [FestOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FestWhereUniqueInput): [Fest!]
@@ -877,7 +823,7 @@ input UserWhereInput {
   movies: MovieManyRelationFilter
   wishlist: MovieManyRelationFilter
   watched: MovieManyRelationFilter
-  preferences: UserPreferenceManyRelationFilter
+  keywords: UserKeywordManyRelationFilter
   myFests: FestManyRelationFilter
   festAttendees: FestManyRelationFilter
   festInvitees: FestManyRelationFilter
@@ -918,7 +864,7 @@ input UserUpdateInput {
   movies: MovieRelateToManyForUpdateInput
   wishlist: MovieRelateToManyForUpdateInput
   watched: MovieRelateToManyForUpdateInput
-  preferences: UserPreferenceRelateToManyForUpdateInput
+  keywords: UserKeywordRelateToManyForUpdateInput
   myFests: FestRelateToManyForUpdateInput
   festAttendees: FestRelateToManyForUpdateInput
   festInvitees: FestRelateToManyForUpdateInput
@@ -950,7 +896,7 @@ input UserCreateInput {
   movies: MovieRelateToManyForCreateInput
   wishlist: MovieRelateToManyForCreateInput
   watched: MovieRelateToManyForCreateInput
-  preferences: UserPreferenceRelateToManyForCreateInput
+  keywords: UserKeywordRelateToManyForCreateInput
   myFests: FestRelateToManyForCreateInput
   festAttendees: FestRelateToManyForCreateInput
   festInvitees: FestRelateToManyForCreateInput
@@ -965,24 +911,24 @@ input FestRelateToManyForCreateInput {
   connect: [FestWhereUniqueInput!]
 }
 
-type UserPreference {
+type UserKeyword {
   id: ID!
   user: User
-  preference: Preference
+  keyword: Keyword
   value: Int
 }
 
-input UserPreferenceWhereUniqueInput {
+input UserKeywordWhereUniqueInput {
   id: ID
 }
 
-input UserPreferenceWhereInput {
-  AND: [UserPreferenceWhereInput!]
-  OR: [UserPreferenceWhereInput!]
-  NOT: [UserPreferenceWhereInput!]
+input UserKeywordWhereInput {
+  AND: [UserKeywordWhereInput!]
+  OR: [UserKeywordWhereInput!]
+  NOT: [UserKeywordWhereInput!]
   id: IDFilter
   user: UserWhereInput
-  preference: PreferenceWhereInput
+  keyword: KeywordWhereInput
   value: IntFilter
 }
 
@@ -997,37 +943,37 @@ input IntFilter {
   not: IntFilter
 }
 
-input UserPreferenceOrderByInput {
+input UserKeywordOrderByInput {
   id: OrderDirection
   value: OrderDirection
 }
 
-input UserPreferenceUpdateInput {
+input UserKeywordUpdateInput {
   user: UserRelateToOneForUpdateInput
-  preference: PreferenceRelateToOneForUpdateInput
+  keyword: KeywordRelateToOneForUpdateInput
   value: Int
 }
 
-input PreferenceRelateToOneForUpdateInput {
-  create: PreferenceCreateInput
-  connect: PreferenceWhereUniqueInput
+input KeywordRelateToOneForUpdateInput {
+  create: KeywordCreateInput
+  connect: KeywordWhereUniqueInput
   disconnect: Boolean
 }
 
-input UserPreferenceUpdateArgs {
-  where: UserPreferenceWhereUniqueInput!
-  data: UserPreferenceUpdateInput!
+input UserKeywordUpdateArgs {
+  where: UserKeywordWhereUniqueInput!
+  data: UserKeywordUpdateInput!
 }
 
-input UserPreferenceCreateInput {
+input UserKeywordCreateInput {
   user: UserRelateToOneForCreateInput
-  preference: PreferenceRelateToOneForCreateInput
+  keyword: KeywordRelateToOneForCreateInput
   value: Int
 }
 
-input PreferenceRelateToOneForCreateInput {
-  create: PreferenceCreateInput
-  connect: PreferenceWhereUniqueInput
+input KeywordRelateToOneForCreateInput {
+  create: KeywordCreateInput
+  connect: KeywordWhereUniqueInput
 }
 
 """
@@ -1078,12 +1024,6 @@ type Mutation {
   updatePosts(data: [PostUpdateArgs!]!): [Post]
   deletePost(where: PostWhereUniqueInput!): Post
   deletePosts(where: [PostWhereUniqueInput!]!): [Post]
-  createPreference(data: PreferenceCreateInput!): Preference
-  createPreferences(data: [PreferenceCreateInput!]!): [Preference]
-  updatePreference(where: PreferenceWhereUniqueInput!, data: PreferenceUpdateInput!): Preference
-  updatePreferences(data: [PreferenceUpdateArgs!]!): [Preference]
-  deletePreference(where: PreferenceWhereUniqueInput!): Preference
-  deletePreferences(where: [PreferenceWhereUniqueInput!]!): [Preference]
   createSound(data: SoundCreateInput!): Sound
   createSounds(data: [SoundCreateInput!]!): [Sound]
   updateSound(where: SoundWhereUniqueInput!, data: SoundUpdateInput!): Sound
@@ -1096,12 +1036,12 @@ type Mutation {
   updateUsers(data: [UserUpdateArgs!]!): [User]
   deleteUser(where: UserWhereUniqueInput!): User
   deleteUsers(where: [UserWhereUniqueInput!]!): [User]
-  createUserPreference(data: UserPreferenceCreateInput!): UserPreference
-  createUserPreferences(data: [UserPreferenceCreateInput!]!): [UserPreference]
-  updateUserPreference(where: UserPreferenceWhereUniqueInput!, data: UserPreferenceUpdateInput!): UserPreference
-  updateUserPreferences(data: [UserPreferenceUpdateArgs!]!): [UserPreference]
-  deleteUserPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
-  deleteUserPreferences(where: [UserPreferenceWhereUniqueInput!]!): [UserPreference]
+  createUserKeyword(data: UserKeywordCreateInput!): UserKeyword
+  createUserKeywords(data: [UserKeywordCreateInput!]!): [UserKeyword]
+  updateUserKeyword(where: UserKeywordWhereUniqueInput!, data: UserKeywordUpdateInput!): UserKeyword
+  updateUserKeywords(data: [UserKeywordUpdateArgs!]!): [UserKeyword]
+  deleteUserKeyword(where: UserKeywordWhereUniqueInput!): UserKeyword
+  deleteUserKeywords(where: [UserKeywordWhereUniqueInput!]!): [UserKeyword]
   endSession: Boolean!
   authenticateUserWithPassword(username: String!, password: String!): UserAuthenticationWithPasswordResult
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
@@ -1147,18 +1087,15 @@ type Query {
   posts(where: PostWhereInput! = {}, orderBy: [PostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PostWhereUniqueInput): [Post!]
   post(where: PostWhereUniqueInput!): Post
   postsCount(where: PostWhereInput! = {}): Int
-  preferences(where: PreferenceWhereInput! = {}, orderBy: [PreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PreferenceWhereUniqueInput): [Preference!]
-  preference(where: PreferenceWhereUniqueInput!): Preference
-  preferencesCount(where: PreferenceWhereInput! = {}): Int
   sounds(where: SoundWhereInput! = {}, orderBy: [SoundOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SoundWhereUniqueInput): [Sound!]
   sound(where: SoundWhereUniqueInput!): Sound
   soundsCount(where: SoundWhereInput! = {}): Int
   users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   user(where: UserWhereUniqueInput!): User
   usersCount(where: UserWhereInput! = {}): Int
-  userPreferences(where: UserPreferenceWhereInput! = {}, orderBy: [UserPreferenceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserPreferenceWhereUniqueInput): [UserPreference!]
-  userPreference(where: UserPreferenceWhereUniqueInput!): UserPreference
-  userPreferencesCount(where: UserPreferenceWhereInput! = {}): Int
+  userKeywords(where: UserKeywordWhereInput! = {}, orderBy: [UserKeywordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserKeywordWhereUniqueInput): [UserKeyword!]
+  userKeyword(where: UserKeywordWhereUniqueInput!): UserKeyword
+  userKeywordsCount(where: UserKeywordWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

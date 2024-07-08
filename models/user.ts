@@ -73,7 +73,7 @@ export const User: ListConfig<Lists.User.TypeInfo<any>, any> = list({
     movies: relationship({ ref: "Movie.author", many: true }),
     wishlist: relationship({ ref: "Movie", many: true }),
     watched: relationship({ ref: "Movie", many: true }),
-    preferences: relationship({ ref: "UserPreference.user", many: true }),
+    keywords: relationship({ ref: "UserKeyword.user", many: true }),
     myFests: relationship({
       ref: "Fest.creator",
       many: true,
