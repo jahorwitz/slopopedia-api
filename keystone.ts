@@ -1,11 +1,16 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
+import { TypeInfo } from ".keystone/types";
+import { uploadFile } from "./s3";
 dotenv.config();
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 export default withAuth(
-  config({
+  config<TypeInfo>({
     server: {
       port: 8080,
       cors: {
@@ -13,6 +18,56 @@ export default withAuth(
           "http://localhost:3000",
           "http://slopopedia.s3-website-us-east-1.amazonaws.com",
         ],
+      },
+      maxFileSize: 200 * 1024 * 1024,
+
+      //custom endpoint used to upload movie images to S3 bucket
+      extendExpressApp: (app, commonContext) => {
+        app.post(
+          "/api/movie",
+          upload.single("movieImage"),
+          async (req, res) => {
+            const userId = req.body.userId;
+            const context = await commonContext.withRequest(req, res);
+            const fileData = {
+              movieTitle: req.body.movieTitle,
+              movieImage: req.file,
+            };
+
+            const userIsAuthorized = () => {
+              return context.query.User.findOne({
+                where: { id: userId },
+              })
+                .then((res) => {
+                  if (res === null) {
+                    return "false";
+                  } else {
+                    return "true";
+                  }
+                })
+                .catch(console.error);
+            };
+
+            const authResult = await userIsAuthorized();
+
+            if (authResult === "true") {
+              const s3upload = await uploadFile(fileData);
+              res.json(s3upload);
+            } else {
+              res.json("User does not have authorization");
+            }
+
+            // - - ***** if we want this endpoint to be responsible for
+            // - - ***** creating an entire slop, this might be where to start
+            // const movie = await context.query.Movie.createOne({
+            //   data: {
+            //     title: 'movie title',
+            //     author:  - - - etc
+            //   },
+            //   query: 'id name posts { id title }', //<== identifies what fields you want in response
+            // });
+          },
+        );
       },
     },
     db: {
@@ -55,3 +110,20 @@ export default withAuth(
     session,
   }),
 );
+
+//***********Images API
+//If support for image fields is enabled in the system,
+//then an images API will be made available on the context object.
+//This API takes advantage of the following types:
+// type ImageMode = 'local';
+
+// type ImageExtension = 'jpg' | 'png' | 'webp' | 'gif';
+
+// type ImageData = {
+//   mode: ImageMode;
+//   id: string;
+//   extension: ImageExtension;
+//   filesize: number;
+//   width: number;
+//   height: number;
+// };
