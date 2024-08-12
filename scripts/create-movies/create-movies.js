@@ -485,6 +485,7 @@ async function soundExists(soundUrl, sessionToken) {
                     releaseYear: parseInt(movie["Release Year"]),
                     runtime: parseInt(movie["Runtime"]),
                     title: movie["Title"],
+                    image: movie["Image"],
                     status: "published",
                     tomatoScore: parseInt(movie["Tomato Score"]),
                     keywords: {
@@ -533,6 +534,7 @@ async function soundExists(soundUrl, sessionToken) {
                   releaseYear: parseInt(movie["Release Year"]),
                   runtime: parseInt(movie["Runtime"]),
                   title: movie["Title"],
+                  image: movie["Image"],
                   status: "published",
                   tomatoScore: parseInt(movie["Tomato Score"]),
                   keywords: movie["Keywords"]
