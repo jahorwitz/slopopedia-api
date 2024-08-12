@@ -448,6 +448,46 @@ async function soundExists(soundUrl, sessionToken) {
     });
   };
 
+  /*
+            Step 1: Download Image
+
+            code should use the image url to download the image.
+
+
+            */
+  const downloadResponse = await axios({
+    url: movie["Image"],
+    method: "GET",
+    responseType: "stream",
+  });
+
+  /*
+                Step 2: Upload Image using new endpoint and formData
+    
+    
+                */
+  let data = new FormData();
+  data.append("movieTitle", movie["Title"]);
+  data.append("movieImage", fs.createReadStream(downloadResponse.data));
+  data.append("userId", process.env.DB_USERNAME);
+
+  var config = {
+    method: "post",
+    url: "http://localhost:8080/api/movie",
+    headers: {
+      ...data.getHeaders(),
+    },
+    data: data,
+  };
+
+  let response = axios(config)
+    .then(function (response) {
+      console.log(JSON.stringify(response.data));
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
   /* ----------------------------- handle movies ----------------------------- */
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
@@ -485,7 +525,7 @@ async function soundExists(soundUrl, sessionToken) {
                     releaseYear: parseInt(movie["Release Year"]),
                     runtime: parseInt(movie["Runtime"]),
                     title: movie["Title"],
-                    image: movie["Image"], //replace with uniqueKey
+                    image: response.data.uniqueKey, //replace with uniqueKey
                     status: "published",
                     tomatoScore: parseInt(movie["Tomato Score"]),
                     keywords: {
@@ -515,50 +555,6 @@ async function soundExists(soundUrl, sessionToken) {
             return { name: keyword.trim() };
           });
 
-          /*
-            Step 1: Download Image
-
-            code should use the image url to download the image.
-
-            should look like this:
-
-            const downloadResponse = await axios({
-                url: movie["Image"],
-                method: 'GET',
-                responseType: 'stream'   // Should this be blob, stream or arraybuffer?
-            });
-          */
-
-
-            /*
-            Step 2: Upload Image using new endpoint and formData
-
-            code should look like this:
-
-              let data = new FormData();
-              data.append('movieTitle', movie["Title"]);
-              data.append('movieImage', fs.createReadStream(downloadResponse.data));
-              data.append('userId', process.env.ADMIN_USER_ID);
-
-              var config = {
-                method: 'post',
-                url: 'http://localhost:8080/api/movie',
-                headers: { 
-                  ...data.getHeaders()
-                },
-                data : data
-              };
-
-              let response = axios(config)
-              .then(function (response) {
-                console.log(JSON.stringify(response.data));
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-            */
-
-
         // create movie
         return axios
           .post(
@@ -578,7 +574,7 @@ async function soundExists(soundUrl, sessionToken) {
                   releaseYear: parseInt(movie["Release Year"]),
                   runtime: parseInt(movie["Runtime"]),
                   title: movie["Title"],
-                  image: movie["Image"], //replace with unique key (response.data.uniqueKey)
+                  image: response.data.uniqueKey, //replace with unique key (response.data.uniqueKey)
                   status: "published",
                   tomatoScore: parseInt(movie["Tomato Score"]),
                   keywords: movie["Keywords"]
