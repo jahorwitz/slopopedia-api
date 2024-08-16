@@ -448,51 +448,51 @@ async function soundExists(soundUrl, sessionToken) {
     });
   };
 
-  /*
-            Step 1: Download Image
-
-            code should use the image url to download the image.
-
-
-            */
-  const downloadResponse = await axios({
-    url: movie["Image"],
-    method: "GET",
-    responseType: "stream",
-  });
-
-  /*
-                Step 2: Upload Image using new endpoint and formData
-    
-    
-                */
-  let data = new FormData();
-  data.append("movieTitle", movie["Title"]);
-  data.append("movieImage", fs.createReadStream(downloadResponse.data));
-  data.append("userId", process.env.DB_USERNAME);
-
-  var config = {
-    method: "post",
-    url: "http://localhost:8080/api/movie",
-    headers: {
-      ...data.getHeaders(),
-    },
-    data: data,
-  };
-
-  let response = axios(config)
-    .then(function (response) {
-      console.log(JSON.stringify(response.data));
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
 
   /* ----------------------------- handle movies ----------------------------- */
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
       const limitedHandleMovie = throat(10, async (movie) => {
+
+        // do a null check on the image url. If it's empty, skip the image creation and just create the movie
+          /*
+            Step 1: Download Image
+
+            code should use the image url to download the image.
+
+
+            */
+
+  
+            // You need to add http:// to the image url
+      const downloadResponse = await axios({
+        url: "http://"+ movie["Image"], // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
+        method: "GET",
+        responseType: "stream",
+      });
+
+      /*
+                    Step 2: Upload Image using new endpoint and formData
+        
+        
+                    */
+      let data = new FormData();
+      data.append("movieTitle", movie["Title"]);
+      data.append("movieImage", fs.createReadStream(downloadResponse.data));
+      data.append("userId", process.env.DB_USERNAME);
+
+      var config = {
+        method: "post",
+        url: "http://localhost:8080/api/movie",
+        headers: {
+          ...data.getHeaders(),
+        },
+        data: data,
+      };
+
+      let response = await axios(config);
+
         const checkedMovie = await movieExists(
           movie["Title"],
           movie["Release Year"],
