@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const { createReadStream, readFileSync } = require("fs-extra");
 const csv = require("csv-parser");
 const throat = require("throat");
+var FormData = require('form-data');
+const {Duplex} = require('stream'); // Native Node Module 
 
 dotenv.config();
 
@@ -12,6 +14,13 @@ const apiUri =
 /* -------------------------------------------------------------------------- */
 /*                              helper functions                              */
 /* -------------------------------------------------------------------------- */
+
+function bufferToStream(myBuffer) {
+  let tmp = new Duplex();
+  tmp.push(myBuffer);
+  tmp.push(null);
+  return tmp;
+}
 
 // check if a keyword type already exists in the database
 async function kwTypeExists(kwType, sessionToken) {
@@ -464,14 +473,19 @@ async function soundExists(soundUrl, sessionToken) {
 
             */
 
-  
-            // You need to add http:// to the image url
-      const downloadResponse = await axios({
-        url: "http://"+ movie["Image"], // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
-        method: "GET",
-        responseType: "stream",
-      });
 
+      let url = movie["Image"].split('\\s+,')[0];
+  
+      let response = null;
+      if(url){
+
+      // You need to add http:// to the image url
+      const downloadResponse = await axios({
+        url: "http://"+ url, // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
+        method: "GET",
+        responseType: "arraybuffer",
+      });
+      console.log("Downloading Image: ", downloadResponse.data);
       /*
                     Step 2: Upload Image using new endpoint and formData
         
@@ -479,19 +493,24 @@ async function soundExists(soundUrl, sessionToken) {
                     */
       let data = new FormData();
       data.append("movieTitle", movie["Title"]);
-      data.append("movieImage", fs.createReadStream(downloadResponse.data));
-      data.append("userId", process.env.DB_USERNAME);
+      data.append("movieImage", bufferToStream(downloadResponse.data));
+      data.append("userId", process.env.ADMIN_PANEL_ID);
 
-      var config = {
+      let config = {
         method: "post",
         url: "http://localhost:8080/api/movie",
-        headers: {
-          ...data.getHeaders(),
+        headers: { 
+          ...data.getHeaders()
         },
-        data: data,
+        data: data
       };
 
-      let response = await axios(config);
+      response = await axios(config);
+      
+    } else {
+      response = {data: {uniqueKey: null}}
+    }
+    console.log("Image Upload Response: ", response.data);
 
         const checkedMovie = await movieExists(
           movie["Title"],
