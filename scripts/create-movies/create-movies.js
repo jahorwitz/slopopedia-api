@@ -13,6 +13,11 @@ const apiUri =
 /*                              helper functions                              */
 /* -------------------------------------------------------------------------- */
 
+function bufferToStream(myBuffer) {
+  const blob = new Blob([myBuffer], { type: "application/octet-stream" });
+  return blob;
+}
+
 // check if a keyword type already exists in the database
 async function kwTypeExists(kwType, sessionToken) {
   const response = await axios.post(
@@ -448,11 +453,62 @@ async function soundExists(soundUrl, sessionToken) {
     });
   };
 
+
   /* ----------------------------- handle movies ----------------------------- */
   const seedMoviesFromMoviesCSV = () => {
     return new Promise((resolve, reject) => {
       const moviePromises = [];
       const limitedHandleMovie = throat(10, async (movie) => {
+
+        // do a null check on the image url. If it's empty, skip the image creation and just create the movie
+          /*
+            Step 1: Download Image
+
+            code should use the image url to download the image.
+
+
+            */
+
+
+      let url = movie["Images"].split(/\s*,/g)[0];
+  
+      let response = null;
+      if(url){
+
+      // You need to add http:// to the image url
+      try {
+       
+        const downloadResponse = await axios({
+          url: "http://"+ url, // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
+          method: "GET",
+          responseType: "arraybuffer",
+        });
+        /*
+        Step 2: Upload Image using new endpoint and formData
+        
+        
+        */
+       let data = new FormData();
+       data.append("movieTitle", movie["Title"]);
+       data.append("movieImage", bufferToStream(downloadResponse.data), movie["Title"]+".image");
+       data.append("userId", process.env.ADMIN_PANEL_ID);
+       
+       let config = {
+         method: "post",
+         url: "http://localhost:8080/api/movie",
+         data: data
+        };
+        
+        response = await axios(config);
+      } catch (error) {
+        console.error("Error downloading image:", error);
+        reponse = {data: {uniqueKey: null}}
+      }
+      
+    } else {
+      response = {data: {uniqueKey: null}}
+    }
+
         const checkedMovie = await movieExists(
           movie["Title"],
           movie["Release Year"],
@@ -485,6 +541,7 @@ async function soundExists(soundUrl, sessionToken) {
                     releaseYear: parseInt(movie["Release Year"]),
                     runtime: parseInt(movie["Runtime"]),
                     title: movie["Title"],
+                    imageKey: response.data.uniqueKey, //replace with uniqueKey
                     status: "published",
                     tomatoScore: parseInt(movie["Tomato Score"]),
                     keywords: {
@@ -533,6 +590,7 @@ async function soundExists(soundUrl, sessionToken) {
                   releaseYear: parseInt(movie["Release Year"]),
                   runtime: parseInt(movie["Runtime"]),
                   title: movie["Title"],
+                  imageKey: response.data.uniqueKey, //replace with unique key (response.data.uniqueKey)
                   status: "published",
                   tomatoScore: parseInt(movie["Tomato Score"]),
                   keywords: movie["Keywords"]
@@ -550,7 +608,7 @@ async function soundExists(soundUrl, sessionToken) {
             }
           )
           .then((data) => {
-            //console.log(data, movie);
+            // console.log(data, movie);
           })
           .catch((err) => {
             console.error(err, movie);
@@ -690,7 +748,7 @@ async function soundExists(soundUrl, sessionToken) {
             }
           )
           .then((data) => {
-            //console.log(data, sound);
+            // console.log(data, sound);
           })
           .catch((err) => {
             console.error(err, sound);

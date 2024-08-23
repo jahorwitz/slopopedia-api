@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { config } from "@keystone-6/core";
 import { TypeInfo } from ".keystone/types";
-import { uploadFile } from "./s3";
+import { uploadFile, getUrl } from "./s3";
 dotenv.config();
 import * as Models from "./models";
 import { withAuth, session } from "./auth";
@@ -23,6 +23,20 @@ export default withAuth(
 
       //custom endpoint used to upload movie images to S3 bucket
       extendExpressApp: (app, commonContext) => {
+        app.get("/api/movie/:movieKey", async (req, res) => {
+          const { movieKey } = req.params;
+          if (!movieKey) {
+            return res.send(404);
+          }
+          try {
+            const url = await getUrl({ key: movieKey });
+            return res.json(url);
+          } catch (e) {
+            res
+              .status(500)
+              .send({ message: "Internal server error. Please try again" });
+          }
+        });
         app.post(
           "/api/movie",
           upload.single("movieImage"),
@@ -31,6 +45,7 @@ export default withAuth(
             const context = await commonContext.withRequest(req, res);
             const fileData = {
               movieTitle: req.body.movieTitle,
+              //@ts-ignore
               movieImage: req.file,
             };
 
@@ -40,9 +55,9 @@ export default withAuth(
               })
                 .then((res) => {
                   if (res === null) {
-                    return "false";
+                    return false;
                   } else {
-                    return "true";
+                    return true;
                   }
                 })
                 .catch(console.error);
@@ -50,11 +65,13 @@ export default withAuth(
 
             const authResult = await userIsAuthorized();
 
-            if (authResult === "true") {
+            if (authResult) {
               const s3upload = await uploadFile(fileData);
               res.json(s3upload);
             } else {
-              res.json("User does not have authorization");
+              res
+                .status(401)
+                .send({ message: "User does not have authorization" });
             }
 
             // - - ***** if we want this endpoint to be responsible for
