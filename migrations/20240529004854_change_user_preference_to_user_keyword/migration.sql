@@ -14,7 +14,7 @@ ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_user_fkey`;
 DROP TABLE `Preference`;
 
 -- ChangeTableName
-ALTER TABLE `UserPreference` RENAME TO `userkeyword`;
+ALTER TABLE `UserPreference` RENAME TO `UserKeyword`;
 
 -- ChangeColumnName
 ALTER TABLE `UserKeyword` RENAME COLUMN `preference` TO `keyword`;
