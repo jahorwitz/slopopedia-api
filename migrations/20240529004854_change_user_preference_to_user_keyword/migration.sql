@@ -4,14 +4,14 @@
   - You are about to drop the `preference` table. If the table is not empty, all the data it contains will be lost.
 
 */
--- DropForeignKey
-ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_preference_fkey`;
+-- -- DropForeignKey
+-- ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_preference_fkey`;
 
--- DropForeignKey
-ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_user_fkey`;
+-- -- DropForeignKey
+-- ALTER TABLE `UserPreference` DROP FOREIGN KEY `UserPreference_user_fkey`;
 
 -- DropTable
-DROP TABLE `Preference`;
+-- DROP TABLE `Preference`;
 
 -- ChangeTableName
 ALTER TABLE `UserPreference` RENAME TO `UserKeyword`;
