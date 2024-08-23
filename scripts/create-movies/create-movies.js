@@ -3,8 +3,6 @@ const dotenv = require("dotenv");
 const { createReadStream, readFileSync } = require("fs-extra");
 const csv = require("csv-parser");
 const throat = require("throat");
-var FormData = require('form-data');
-const {Duplex} = require('stream'); // Native Node Module 
 
 dotenv.config();
 
@@ -16,10 +14,8 @@ const apiUri =
 /* -------------------------------------------------------------------------- */
 
 function bufferToStream(myBuffer) {
-  let tmp = new Duplex();
-  tmp.push(myBuffer);
-  tmp.push(null);
-  return tmp;
+  const blob = new Blob([myBuffer], { type: "application/octet-stream" });
+  return blob;
 }
 
 // check if a keyword type already exists in the database
@@ -474,43 +470,44 @@ async function soundExists(soundUrl, sessionToken) {
             */
 
 
-      let url = movie["Image"].split('\\s+,')[0];
+      let url = movie["Images"].split(/\s*,/g)[0];
   
       let response = null;
       if(url){
 
       // You need to add http:// to the image url
-      const downloadResponse = await axios({
-        url: "http://"+ url, // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
-        method: "GET",
-        responseType: "arraybuffer",
-      });
-      console.log("Downloading Image: ", downloadResponse.data);
-      /*
-                    Step 2: Upload Image using new endpoint and formData
+      try {
+       
+        const downloadResponse = await axios({
+          url: "http://"+ url, // remove the first two characters from the image url. Also this might be a list of urls. split by comma and download each image (but make sure to use only one for the moive)
+          method: "GET",
+          responseType: "arraybuffer",
+        });
+        /*
+        Step 2: Upload Image using new endpoint and formData
         
         
-                    */
-      let data = new FormData();
-      data.append("movieTitle", movie["Title"]);
-      data.append("movieImage", bufferToStream(downloadResponse.data));
-      data.append("userId", process.env.ADMIN_PANEL_ID);
-
-      let config = {
-        method: "post",
-        url: "http://localhost:8080/api/movie",
-        headers: { 
-          ...data.getHeaders()
-        },
-        data: data
-      };
-
-      response = await axios(config);
+        */
+       let data = new FormData();
+       data.append("movieTitle", movie["Title"]);
+       data.append("movieImage", bufferToStream(downloadResponse.data), movie["Title"]+".image");
+       data.append("userId", process.env.ADMIN_PANEL_ID);
+       
+       let config = {
+         method: "post",
+         url: "http://localhost:8080/api/movie",
+         data: data
+        };
+        
+        response = await axios(config);
+      } catch (error) {
+        console.error("Error downloading image:", error);
+        reponse = {data: {uniqueKey: null}}
+      }
       
     } else {
       response = {data: {uniqueKey: null}}
     }
-    console.log("Image Upload Response: ", response.data);
 
         const checkedMovie = await movieExists(
           movie["Title"],
@@ -544,7 +541,7 @@ async function soundExists(soundUrl, sessionToken) {
                     releaseYear: parseInt(movie["Release Year"]),
                     runtime: parseInt(movie["Runtime"]),
                     title: movie["Title"],
-                    image: response.data.uniqueKey, //replace with uniqueKey
+                    imageKey: response.data.uniqueKey, //replace with uniqueKey
                     status: "published",
                     tomatoScore: parseInt(movie["Tomato Score"]),
                     keywords: {
@@ -593,7 +590,7 @@ async function soundExists(soundUrl, sessionToken) {
                   releaseYear: parseInt(movie["Release Year"]),
                   runtime: parseInt(movie["Runtime"]),
                   title: movie["Title"],
-                  image: response.data.uniqueKey, //replace with unique key (response.data.uniqueKey)
+                  imageKey: response.data.uniqueKey, //replace with unique key (response.data.uniqueKey)
                   status: "published",
                   tomatoScore: parseInt(movie["Tomato Score"]),
                   keywords: movie["Keywords"]
@@ -611,7 +608,7 @@ async function soundExists(soundUrl, sessionToken) {
             }
           )
           .then((data) => {
-            //console.log(data, movie);
+            // console.log(data, movie);
           })
           .catch((err) => {
             console.error(err, movie);
@@ -751,7 +748,7 @@ async function soundExists(soundUrl, sessionToken) {
             }
           )
           .then((data) => {
-            //console.log(data, sound);
+            // console.log(data, sound);
           })
           .catch((err) => {
             console.error(err, sound);
