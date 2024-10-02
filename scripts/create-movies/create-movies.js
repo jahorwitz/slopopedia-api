@@ -483,14 +483,17 @@ async function soundExists(soundUrl, sessionToken) {
           method: "GET",
           responseType: "arraybuffer",
         });
+
+        console.log("Downloaded image:", downloadResponse.data);
         /*
         Step 2: Upload Image using new endpoint and formData
         
         
         */
        let data = new FormData();
-       data.append("movieTitle", movie["Title"]);
-       data.append("movieImage", bufferToStream(downloadResponse.data), movie["Title"]+".image");
+       let clean_title = movie["Title"].replace(/[^a-zA-Z0-9]/g, "_");
+       data.append("movieTitle", clean_title);
+       data.append("movieImage", bufferToStream(downloadResponse.data), clean_title+".image"); //replace any non alphanumeric characters with a _
        data.append("userId", process.env.ADMIN_PANEL_ID);
        
        let config = {
@@ -502,8 +505,9 @@ async function soundExists(soundUrl, sessionToken) {
         response = await axios(config);
       } catch (error) {
         console.error("Error downloading image:", error);
-        reponse = {data: {uniqueKey: null}}
+        response = {data: {uniqueKey: null}}
       }
+      console.log(response.data);
       
     } else {
       response = {data: {uniqueKey: null}}
@@ -521,7 +525,8 @@ async function soundExists(soundUrl, sessionToken) {
               return { name: keyword.trim() };
             });
           // update the movie
-          return await axios
+          try {
+          let result =  await axios
             .post(
               apiUri,
               {
@@ -555,14 +560,16 @@ async function soundExists(soundUrl, sessionToken) {
                   Cookie: `keystonejs-session=${sessionToken}`,
                 },
               }
-            )
-            .catch((error) => {
+            ) 
+          return result;
+        } catch(error)  {
               if (error.response) {
                 console.error("Error response:", error.response.data);
               } else {
                 console.error("Error message:", error.message);
               }
-            });
+            };
+          return null;
         }
 
         const currentMovieKeywords = movie["Keywords"]
