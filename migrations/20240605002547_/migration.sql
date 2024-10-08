@@ -6,13 +6,13 @@
 
 */
 -- DropIndex
--- DROP INDEX `Keyword_name_key` ON `Keyword`;
+DROP INDEX `Keyword_name_key` ON `Keyword`;
 
 -- -- DropIndex
--- DROP INDEX `KeywordType_name_key` ON `KeywordType`;
+DROP INDEX `KeywordType_name_key` ON `KeywordType`;
 
 -- -- DropIndex
--- DROP INDEX `Sound_audio_key` ON `Sound`;
+DROP INDEX `Sound_audio_key` ON `Sound`;
 
 -- AlterTable
 -- ALTER TABLE `Movie` MODIFY `description` VARCHAR(191) NOT NULL DEFAULT '';
