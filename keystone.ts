@@ -89,7 +89,7 @@ export default withAuth(
     },
     db: {
       provider: "mysql",
-      url: `mysql://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:3306/${process.env.DB_NAME}`,
+      url: `mysql://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:6652/${process.env.DB_NAME}`,
       enableLogging: true,
       idField: { kind: "uuid" },
       useMigrations: true,
